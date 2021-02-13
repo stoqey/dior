@@ -1,3 +1,5 @@
+import {Trade} from './Trade';
+
 export class TradeBook {
     instrument: string;
     trades: Trade[];

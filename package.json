@@ -76,5 +76,6 @@
     "typescript": ">=2.0"
   },
   "dependencies": {
+    "@stoqey/sofa": "^0.1.9"
   }
 }
