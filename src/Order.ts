@@ -1,7 +1,4 @@
-interface ITime {
-    date: Date;
-    timestamp: number;
-}
+import { ITime } from './shared';
 
 export interface OrderTracker extends ITime {
     orderId: string;
