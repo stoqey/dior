@@ -1,4 +1,4 @@
-import {ITime} from './shared';
+import {ITime} from '../shared';
 
 export interface OrderTracker extends ITime {
     orderId: string;

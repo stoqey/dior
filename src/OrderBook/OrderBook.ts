@@ -1,6 +1,6 @@
-import {Order, OrderTracker} from './Order';
-import {TradeBook} from './TradeBook';
-import {OrderModal} from './Order.modal';
+import {Order, OrderTracker} from '../Order';
+import {TradeBook} from '../TradeBook';
+import {OrderModal} from '../Order/Order.modal';
 export class OrderBook {
     instrument: string;
     marketPrice: number;

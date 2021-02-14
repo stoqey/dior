@@ -1,4 +1,4 @@
-import {ITime} from './shared';
+import {ITime} from '../shared';
 
 export interface Trade extends ITime {
     id: string;
