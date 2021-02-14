@@ -118,7 +118,28 @@ export class OrderBook {
      * add
      * @param order Order
      */
-    public add(order: Order) {}
+    public add(order: Order) {
+        /**
+         	if order.Qty <= MinQty { // check the qty
+                return false, ErrInvalidQty
+            }
+            if order.Type == TypeMarket && !order.Price.IsZero() {
+                return false, ErrInvalidMarketPrice
+            }
+            if order.Type == TypeLimit && order.Price.IsZero() {
+                return false, ErrInvalidLimitPrice
+            }
+            if order.Params.Is(ParamStop) && order.StopPrice.IsZero() {
+                return false, ErrInvalidStopPrice
+            }
+            // todo: handle stop orders, currently ignored
+            matched, err := o.submit(order)
+            if err != nil {
+                return matched, err
+            }
+            return matched, nilÎ
+         */
+    }
 
     /**
      * submit
