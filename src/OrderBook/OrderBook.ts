@@ -5,7 +5,7 @@ export class OrderBook {
     instrument: string;
     marketPrice: number;
     tradeBook: TradeBook;
-    orderRepo: typeof OrderModal;
+    orderModal: typeof OrderModal;
     activeOrders: Order[];
     bids: Order[];
     asks: Order[];
@@ -16,7 +16,28 @@ export class OrderBook {
      */
     public makeComparator() {}
 
-    constructor() {}
+    /**
+     * Create a new OrderBook
+     * @param instrument
+     * @param marketPrice
+     * @param tradeBook
+     * @param orderModal
+     */
+    constructor(
+        instrument: string,
+        marketPrice: number,
+        tradeBook: TradeBook,
+        orderModal: typeof OrderModal
+    ) {
+        this.instrument = instrument;
+        this.marketPrice = marketPrice;
+        this.asks = []; // TODO restore
+        this.bids = []; // TODO restore
+        this.orderTrackers = [];
+        this.activeOrders = [];
+        this.orderModal = orderModal;
+        this.tradeBook = tradeBook;
+    }
 
     /**
      * getBids
