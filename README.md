@@ -1,6 +1,12 @@
 
 ## Dior BETA
 
+## Tech
+- Couchbase for Order/Trades storage
+- Influx for marketdata storage quote/query
+- uWebsocket for TCP/UDP
+
+
 * order types
     * market order - execute an order as fast as possible, cross the spread
     * limit order - execute an order with a limit on bid/ask price (e.g. $x or less for a bid, or $y or more for an ask)
