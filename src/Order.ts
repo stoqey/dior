@@ -1,10 +1,10 @@
-import { ITime } from './shared';
+import {ITime} from './shared';
 
 export interface OrderTracker extends ITime {
     orderId: string;
     type: string;
     price: number;
-};
+}
 
 export class Order implements ITime {
     date: Date;
@@ -24,42 +24,30 @@ export class Order implements ITime {
     /**
      * isCancelled
      */
-    public isCancelled() {
-        
-    }
+    public isCancelled() {}
 
     /**
      * isFilled
      */
-    public isFilled() {
-        
-    }
+    public isFilled() {}
 
     /**
      * isBid
      */
-    public isBid() {
-        
-    }
+    public isBid() {}
 
     /**
      * isAsk
      */
-    public isAsk() {
-        
-    }
+    public isAsk() {}
 
     /**
      * cancel
      */
-    public cancel() {
-        
-    }
+    public cancel() {}
 
     /**
      * unfilledQty
      */
-    public unfilledQty() {
-        
-    }
+    public unfilledQty() {}
 }
