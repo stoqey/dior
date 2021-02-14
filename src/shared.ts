@@ -1,4 +1,6 @@
 export interface ITime {
     date: Date;
-    timestamp: number;
+    timestamp?: number;
 }
+
+export type OrderType = 'market' | 'limit';

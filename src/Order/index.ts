@@ -1,4 +1,4 @@
-import {ITime} from '../shared';
+import {ITime, OrderType} from '../shared';
 
 export interface OrderTracker extends ITime {
     orderId: string;
@@ -6,20 +6,63 @@ export interface OrderTracker extends ITime {
     price: number;
 }
 
-export class Order implements ITime {
-    date: Date;
-    timestamp: number;
+export enum OrderParams {
+    AON = 'aon', // all-or-nothing - complete fill or cancel https://www.investopedia.com/terms/a/aon.asp
+    IOC = 'ioc', // immediate-or-cancel - immediately fill what you can, cancel the rest
+}
+
+export interface OrderOptions {
+    stop: boolean; // stop order (has to have stop price set)
+    params: OrderParams[]; // = ParamIOC | ParamAON // IOC + AON - immediately try to fill the whole order
+    gtc: boolean; // good-till-cancelled -  keep order active until manually cancelled
+    gfd: boolean; // good-for-day keep order active until the end of the trading day
+    gtd: boolean; // good-till-date - keep order active until the provided date (including the date)
+}
+
+export interface OrderObject extends ITime {
+    // time
+    // date: Date;
+    // timestamp?: number;
+
     id: string;
     instrument: string;
     clientId: string;
-    type: string;
-    params: number;
+    type: OrderType;
     qty: number;
     filledQty: number;
     price: number;
     stopPrice: number;
     side: boolean;
     canceled: boolean;
+}
+export class Order {
+    // OrderOptions
+    options: OrderOptions;
+
+    // stop = false;
+    // params: OrderParams[];
+    // gtc: boolean;
+    // gfd: boolean;
+    // gtd: boolean;
+
+    // OrderObject
+    orderObject: OrderObject;
+
+    // id: string;
+    // instrument: string;
+    // clientId: string;
+    // type: OrderType;
+    // qty: number;
+    // filledQty: number;
+    // price: number;
+    // stopPrice: number;
+    // side: boolean;
+    // canceled: boolean;
+
+    constructor(orderObject: OrderObject, options: OrderOptions) {
+        this.options = options;
+        this.orderObject = orderObject;
+    }
 
     /**
      * isCancelled
