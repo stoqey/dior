@@ -171,7 +171,7 @@ export class OrderBook {
 
         // TODO remove from database
         let oMap: Order[] = [];
-        if (tracker.type === 'BUY') {
+        if (tracker.action === 'BUY') {
             oMap = this.bids;
             oMap = oMap.filter((i) => i.id !== tracker.orderId); // remove from books
             this.bids = oMap;
