@@ -1,4 +1,5 @@
-import {Order, OrderTracker} from '../Order';
+import includes from 'lodash/includes';
+import {Order, OrderParams, OrderTracker} from '../Order';
 import {TradeBook} from '../TradeBook';
 import {OrderModal} from '../Order/Order.modal';
 export class OrderBook {
@@ -90,7 +91,9 @@ export class OrderBook {
      * getActiveOrder
      * @param id string
      */
-    public getActiveOrder(id: string) {}
+    public getActiveOrder(id: string): Order {
+        return this.activeOrders.find((i) => i.id === id);
+    }
 
     /**
      * setActiveOrder
@@ -253,6 +256,22 @@ export class OrderBook {
         // 	seller = order.CustomerID
         // 	askOrderID = order.ID
         // }
+
+        const matched = false;
+        const bidOrderId: string = null;
+        let askOrderId: string = null;
+        let buyer: string = null;
+        let seller: string = null;
+        const buying = order.isBid();
+
+        if (buying) {
+            buyer = order.clientId;
+        } else {
+            seller = order.clientId;
+            askOrderId = order.id;
+        }
+
+        const currentAON = order.options && order.options.params;
         // removeOrders := make([]uint64, 0)
         // defer func() {
         // 	for _, orderID := range removeOrders {
@@ -260,6 +279,30 @@ export class OrderBook {
         // 	}
         // }()
         // currentAON := order.Params.Is(ParamAON)
+
+        for (const offer of offers) {
+            // 	oppositeTracker := iter.Key()
+            // 	oppositeOrder, ok := o.getActiveOrder(oppositeTracker.OrderID)
+            // 	if !ok {
+            // 		panic("should NEVER happen - tracker exists but active order does not")
+            // 	}
+            // 	oppositeAON := oppositeOrder.Params.Is(ParamAON)
+            // 	if oppositeOrder.IsCancelled() {
+            // 		removeOrders = append(removeOrders, oppositeOrder.ID) // mark order for removal
+            // 		continue                                              // don't match with this order
+            // 	}
+            // 	qty := min(order.UnfilledQty(), oppositeOrder.UnfilledQty())
+            // 	// ensure AONs are filled completely
+            // 	if currentAON && qty != order.UnfilledQty() {
+            // 		continue // couldn't find a match - we require AON but couldn't fill the order in one trade
+            // 	}
+            // 	if oppositeAON && qty != oppositeOrder.UnfilledQty() {
+            // 		continue // couldn't find a match - other offer requires AON but our order can't fill it completely
+            // 	}
+
+            const oppositeTracker = offer;
+            const oppositeOrder = this.getActiveOrder(oppositeTracker.id);
+        }
         // for iter := offers.Iterator(); iter.Valid(); iter.Next() {
         // 	oppositeTracker := iter.Key()
         // 	oppositeOrder, ok := o.getActiveOrder(oppositeTracker.OrderID)

@@ -4,3 +4,5 @@ export interface ITime {
 }
 
 export type OrderType = 'market' | 'limit';
+
+export type Action = 'BUY' | 'SELL';

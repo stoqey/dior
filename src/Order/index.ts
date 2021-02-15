@@ -1,4 +1,4 @@
-import {ITime, OrderType} from '../shared';
+import {ITime, OrderType, Action} from '../shared';
 
 export interface OrderTracker extends ITime {
     orderId: string;
@@ -23,7 +23,7 @@ export interface OrderObject extends ITime {
     // time
     // date: Date;
     // timestamp?: number;
-
+    action: Action;
     id: string;
     instrument: string;
     clientId: string;
@@ -46,6 +46,7 @@ export class Order implements OrderObject {
     // gtd: boolean;
 
     // OrderObject
+    action: Action;
     id: string;
     instrument: string;
     clientId: string;
@@ -60,6 +61,7 @@ export class Order implements OrderObject {
     constructor(orderObject: OrderObject, options: OrderOptions) {
         this.options = options;
         const {
+            action,
             id,
             instrument,
             clientId,
@@ -72,6 +74,7 @@ export class Order implements OrderObject {
             canceled,
         } = orderObject;
 
+        this.action = action;
         this.id = id;
         this.instrument = instrument;
         this.clientId = clientId;
@@ -97,12 +100,16 @@ export class Order implements OrderObject {
     /**
      * isBid
      */
-    public isBid() {}
+    public isBid(): boolean {
+        return this.action === 'BUY';
+    }
 
     /**
      * isAsk
      */
-    public isAsk() {}
+    public isAsk(): boolean {
+        return this.action === 'SELL';
+    }
 
     /**
      * cancel
