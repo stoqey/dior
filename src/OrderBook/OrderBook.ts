@@ -211,29 +211,30 @@ export class OrderBook {
      * submit
      * @param order Order
      */
-    public submit(order: Order) {
-        // var matched bool
-        // if order.IsBid() {
-        //     // order is a bid, match with asks
-        //     matched, _ = o.matchOrder(&order, o.asks)
-        // } else {
-        //     // order is an ask, match with bids
-        //     matched, _ = o.matchOrder(&order, o.bids)
-        // }
-        // addToBooks := true
-        // if order.Params.Is(ParamIOC) && !order.IsFilled() {
-        //     order.Cancel()                                  // cancel the rest of the order
-        //     if err := o.orderRepo.Save(order); err != nil { // store the order (not in the books)
-        //         return matched, err
-        //     }
-        //     addToBooks = false // don't add the order to the books (keep it stored but not active)
-        // }
-        // if !order.IsFilled() && addToBooks {
-        //     if err := o.addToBooks(order); err != nil {
-        //         return matched, err
-        //     }
-        // }
-        // return matched, nil
+    public async submit(order: Order): Promise<boolean> {
+        let matched: boolean;
+
+        if (order.isBid()) {
+            matched = await this.matchOrder(order, this.asks);
+        } else {
+            matched = await this.matchOrder(order, this.bids);
+        }
+
+        let addToBooks = true;
+        if (order.options.params.includes(OrderParams.IOC) && !order.isFilled()) {
+            order.cancel(); // cancel the rest of the order
+            const saved = await this.orderModal.save(order); // store the order (not in the books)
+            if (saved) {
+                return matched;
+            }
+            addToBooks = false; // don't add the order to the books (keep it stored but not active)
+        }
+        if (!order.isFilled() && addToBooks) {
+            await this.addToBook(order); // store the order (in the books)
+            return matched;
+        }
+
+        return matched;
     }
 
     min = (q1: number, q2: number): number => {
@@ -248,7 +249,7 @@ export class OrderBook {
      * @param order Order
      * @param offers Order[]
      */
-    public async matchOrder(order: Order, offers: Order[]) {
+    public async matchOrder(order: Order, offers: Order[]): Promise<boolean> {
         let matched = false;
         let bidOrderId: string = null;
         let askOrderId: string = null;
