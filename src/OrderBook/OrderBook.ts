@@ -3,6 +3,14 @@ import {Order, OrderParams, OrderTracker} from '../Order';
 import {TradeBook} from '../TradeBook';
 import {Trade} from '../Trade';
 import {OrderModal} from '../Order/Order.modal';
+
+const minQty = 1;
+
+const ErrInvalidQty = new Error('invalid quantity provided');
+const ErrInvalidMarketPrice = new Error('price has to be zero for market orders');
+const ErrInvalidLimitPrice = new Error('price has to be set for limit orders');
+const ErrInvalidStopPrice = new Error('stop price has to be set for a stop order');
+
 export class OrderBook {
     instrument: string;
     marketPrice: number;
@@ -184,27 +192,36 @@ export class OrderBook {
      * add
      * @param order Order
      */
-    public add(order: Order) {
-        /**
-         	if order.Qty <= MinQty { // check the qty
-                return false, ErrInvalidQty
-            }
-            if order.Type == TypeMarket && !order.Price.IsZero() {
-                return false, ErrInvalidMarketPrice
-            }
-            if order.Type == TypeLimit && order.Price.IsZero() {
-                return false, ErrInvalidLimitPrice
-            }
-            if order.Params.Is(ParamStop) && order.StopPrice.IsZero() {
-                return false, ErrInvalidStopPrice
-            }
-            // todo: handle stop orders, currently ignored
-            matched, err := o.submit(order)
-            if err != nil {
-                return matched, err
-            }
-            return matched, nilÎ
-         */
+    public async add(order: Order): Promise<boolean> {
+        if (order.qty <= minQty) {
+            console.error(ErrInvalidQty);
+            // check the qty
+            return false;
+        }
+
+        if (order.type === 'market' && order.price !== 0) {
+            console.error(ErrInvalidMarketPrice);
+            return false;
+        }
+
+        if (order.type === 'limit' && order.price === 0) {
+            console.error(ErrInvalidLimitPrice);
+            return false;
+        }
+
+        if (order.options.stop && order.stopPrice === 0) {
+            console.error(ErrInvalidStopPrice);
+            return false;
+        }
+
+        const matched = await this.submit(order);
+
+        if (!matched) {
+            console.error(new Error('order has not been matched'));
+            return false;
+        }
+
+        return matched;
     }
 
     /**
