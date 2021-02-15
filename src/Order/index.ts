@@ -35,7 +35,7 @@ export interface OrderObject extends ITime {
     side: boolean;
     canceled: boolean;
 }
-export class Order {
+export class Order implements OrderObject {
     // OrderOptions
     options: OrderOptions;
 
@@ -46,22 +46,42 @@ export class Order {
     // gtd: boolean;
 
     // OrderObject
-    orderObject: OrderObject;
-
-    // id: string;
-    // instrument: string;
-    // clientId: string;
-    // type: OrderType;
-    // qty: number;
-    // filledQty: number;
-    // price: number;
-    // stopPrice: number;
-    // side: boolean;
-    // canceled: boolean;
+    id: string;
+    instrument: string;
+    clientId: string;
+    type: OrderType;
+    qty: number;
+    filledQty: number;
+    price: number;
+    stopPrice: number;
+    side: boolean;
+    canceled: boolean;
 
     constructor(orderObject: OrderObject, options: OrderOptions) {
         this.options = options;
-        this.orderObject = orderObject;
+        const {
+            id,
+            instrument,
+            clientId,
+            type,
+            qty,
+            filledQty,
+            price,
+            stopPrice,
+            side,
+            canceled,
+        } = orderObject;
+
+        this.id = id;
+        this.instrument = instrument;
+        this.clientId = clientId;
+        this.type = type;
+        this.qty = qty;
+        this.filledQty = filledQty;
+        this.price = price;
+        this.stopPrice = stopPrice;
+        this.side = side;
+        this.canceled = canceled;
     }
 
     /**
