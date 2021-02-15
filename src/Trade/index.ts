@@ -1,27 +1,27 @@
 import {ITime} from '../shared';
 
 interface ITrade extends ITime {
-    id: string;
+    id?: string;
     buyer: string;
     seller: string;
     instrument: string;
     qty: number;
     price: number;
-    total: number;
-    rejected: boolean;
+    total?: number;
+    rejected?: boolean;
     bidOrderId: string;
     askOrderId: string;
 }
 
 export class Trade implements ITrade {
-    id: string;
+    id?: string;
     buyer: string;
     seller: string;
     instrument: string;
     qty: number;
     price: number;
-    total: number;
-    rejected: boolean;
+    total?: number;
+    rejected?: boolean;
     bidOrderId: string;
     askOrderId: string;
     date: Date;
@@ -40,6 +40,7 @@ export class Trade implements ITrade {
             bidOrderId,
             askOrderId,
             date,
+            timestamp,
         } = trade;
 
         this.id = id;
@@ -53,5 +54,6 @@ export class Trade implements ITrade {
         this.bidOrderId = bidOrderId;
         this.askOrderId = askOrderId;
         this.date = date;
+        this.timestamp = timestamp;
     }
 }

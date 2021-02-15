@@ -103,7 +103,9 @@ export class Order implements OrderObject {
     /**
      * isFilled
      */
-    public isFilled() {}
+    public isFilled(): boolean {
+        return this.qty - this.filledQty === 0;
+    }
 
     /**
      * isBid
