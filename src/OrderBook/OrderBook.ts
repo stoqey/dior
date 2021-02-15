@@ -162,31 +162,87 @@ export class OrderBook {
      * removeFromBooks
      * @param id string
      */
-    public removeFromBooks(id: string) {}
+    public removeFromBooks(id: string) {
+        // o.orderTrackerMutex.Lock()
+        // defer o.orderTrackerMutex.Unlock()
+        // tracker, ok := o.orderTrackers[orderID]
+        // if !ok {
+        // 	return
+        // }
+        // order, ok := o.getActiveOrder(orderID)
+        // if !ok {
+        // 	return
+        // }
+        // if err := o.orderRepo.Save(order); err != nil { // ensure we store the latest order data
+        // 	log.Printf("cannot save the order %+v to the repo - repository data might be inconsistent\n", order.ID)
+        // }
+        // var mutex *sync.RWMutex
+        // var oMap *orderMap
+        // if tracker.Side == SideBuy {
+        // 	mutex = &o.bidMutex
+        // 	oMap = o.bids
+        // } else {
+        // 	mutex = &o.askMutex
+        // 	oMap = o.asks
+        // }
+        // mutex.Lock()
+        // oMap.Del(tracker) // remove from books
+        // mutex.Unlock()
+        // delete(o.orderTrackers, orderID) // remove the tracker
+        // o.orderMutex.Lock()
+        // delete(o.activeOrders, orderID) // remove an active order
+        // o.orderMutex.Unlock()
+    }
 
     /**
      * cancel
      * @param id string
      */
-    public cancel(id: string) {}
+    public cancel(id: string) {
+        // o.orderMutex.RLock()
+        // order, ok := o.activeOrders[id]
+        // o.orderMutex.RUnlock()
+        // if !ok {
+        //     return nil
+        // }
+        // order.Cancel()
+        // return o.updateActiveOrder(order)
+    }
 
     /**
      * getOrderTracker
      * @param orderId: string
      */
-    public getOrderTracker(orderId: string) {}
+    public getOrderTracker(orderId: string) {
+        // o.orderTrackerMutex.RLock()
+        // defer o.orderTrackerMutex.RUnlock()
+        // tracker, ok := o.orderTrackers[orderID]
+        // return tracker, ok
+    }
 
     /**
      * setOrderTracker
      * @param tracker OrderTracker
      */
-    public setOrderTracker(tracker: OrderTracker) {}
+    public setOrderTracker(tracker: OrderTracker) {
+        // o.orderTrackerMutex.Lock()
+        // defer o.orderTrackerMutex.Unlock()
+        // if _, ok := o.orderTrackers[tracker.OrderID]; ok {
+        // 	return fmt.Errorf("order tracker with ID %d already exists", tracker.OrderID)
+        // }
+        // o.orderTrackers[tracker.OrderID] = tracker
+        // return nil
+    }
 
     /**
      * removeOrderTracker
      * @param orderId: string
      */
-    public removeOrderTracker(orderId: string) {}
+    public removeOrderTracker(orderId: string) {
+        //     o.orderTrackerMutex.Lock()
+        // defer o.orderTrackerMutex.Unlock()
+        // delete(o.orderTrackers, orderID)
+    }
 
     /**
      * add
