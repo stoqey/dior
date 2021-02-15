@@ -235,6 +235,13 @@ export class OrderBook {
         // return matched, nil
     }
 
+    min = (q1: number, q2: number): number => {
+        if (q1 <= q2) {
+            return q1;
+        }
+        return q2;
+    };
+
     /**
      * matchOrder
      * @param order Order
@@ -272,6 +279,8 @@ export class OrderBook {
         }
 
         const currentAON = order.options && order.options.params;
+
+        const removeOrders: string[] = [];
         // removeOrders := make([]uint64, 0)
         // defer func() {
         // 	for _, orderID := range removeOrders {
@@ -302,6 +311,18 @@ export class OrderBook {
 
             const oppositeTracker = offer;
             const oppositeOrder = this.getActiveOrder(oppositeTracker.id);
+
+            if (!oppositeOrder) {
+                throw new Error('should NEVER happen - tracker exists but active order does not');
+            }
+
+            const oppositeAON = oppositeOrder.options && oppositeOrder.options.params;
+            if (oppositeOrder.isCancelled()) {
+                removeOrders.push(oppositeOrder.id); // mark order for removal
+                continue; // don't match with this order
+            }
+
+            const qty = this.min(order.UnfilledQty(), oppositeOrder.UnfilledQty());
         }
         // for iter := offers.Iterator(); iter.Valid(); iter.Next() {
         // 	oppositeTracker := iter.Key()

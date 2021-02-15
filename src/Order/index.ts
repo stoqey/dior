@@ -90,7 +90,9 @@ export class Order implements OrderObject {
     /**
      * isCancelled
      */
-    public isCancelled() {}
+    public isCancelled(): boolean {
+        return this.canceled;
+    }
 
     /**
      * isFilled
@@ -119,5 +121,7 @@ export class Order implements OrderObject {
     /**
      * unfilledQty
      */
-    public unfilledQty() {}
+    public unfilledQty(o: Order): number {
+        return o.qty - o.filledQty;
+    }
 }
