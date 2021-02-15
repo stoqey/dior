@@ -1,4 +1,5 @@
 import includes from 'lodash/includes';
+import isEmpty from 'lodash/isEmpty';
 import {Order, OrderParams, OrderTracker} from '../Order';
 import {TradeBook} from '../TradeBook';
 import {Trade} from '../Trade';
@@ -114,42 +115,32 @@ export class OrderBook {
      * addToBook
      * @param order Order
      */
-    public addToBook(order: Order) {
-        /**
-         var mutex *sync.RWMutex
-        var oMap *orderMap
+    public async addToBook(order: Order) {
+        const offers: Order[] = [];
 
-        if order.IsBid() {
-            mutex = &o.bidMutex
-            oMap = o.bids
+        const price = order.price;
+
+        const tracker: OrderTracker = {
+            orderId: order.id,
+            type: order.type,
+            price,
+            action: order.action,
+            timestamp: Date.now(),
+            date: new Date(),
+        };
+
+        this.setOrderTracker(tracker);
+
+        if (order.isBid()) {
+            this.bids.push(order); // enter pointer to the tree
         } else {
-            mutex = &o.askMutex
-            oMap = o.asks
-        }
-        price, err := order.Price.Float64() // might be really slow
-        if err != nil {
-            return err
-        }
-        tracker := OrderTracker{
-            Price:     price,
-            Timestamp: order.Timestamp.UnixNano(),
-            OrderID:   order.ID,
-            Type:      order.Type,
-            Side:      order.Side,
+            this.asks.push(order); // enter pointer to the tree
         }
 
-        mutex.Lock()
-        defer mutex.Unlock()
-        oMap.Set(tracker, true) // enter pointer to the tree
-        if err := o.setOrderTracker(tracker); err != nil {
-            return err
-        }
-        if err := o.setActiveOrder(order); err != nil {
-            o.removeOrderTracker(order.ID)
-            return err
-        }
-        return o.orderRepo.Save(order)
-         */
+        await this.setActiveOrder(order);
+        await this.removeOrderTracker(order.id);
+
+        return await this.orderModal.save(order);
     }
 
     /**
@@ -162,36 +153,36 @@ export class OrderBook {
      * removeFromBooks
      * @param id string
      */
-    public removeFromBooks(id: string) {
-        // o.orderTrackerMutex.Lock()
-        // defer o.orderTrackerMutex.Unlock()
-        // tracker, ok := o.orderTrackers[orderID]
-        // if !ok {
-        // 	return
-        // }
-        // order, ok := o.getActiveOrder(orderID)
-        // if !ok {
-        // 	return
-        // }
-        // if err := o.orderRepo.Save(order); err != nil { // ensure we store the latest order data
-        // 	log.Printf("cannot save the order %+v to the repo - repository data might be inconsistent\n", order.ID)
-        // }
-        // var mutex *sync.RWMutex
-        // var oMap *orderMap
-        // if tracker.Side == SideBuy {
-        // 	mutex = &o.bidMutex
-        // 	oMap = o.bids
-        // } else {
-        // 	mutex = &o.askMutex
-        // 	oMap = o.asks
-        // }
-        // mutex.Lock()
-        // oMap.Del(tracker) // remove from books
-        // mutex.Unlock()
-        // delete(o.orderTrackers, orderID) // remove the tracker
-        // o.orderMutex.Lock()
-        // delete(o.activeOrders, orderID) // remove an active order
-        // o.orderMutex.Unlock()
+    public async removeFromBooks(id: string) {
+        const tracker = this.orderTrackers.find((i) => i.orderId === id);
+        if (!isEmpty(tracker)) {
+            throw new Error(`Tracker not found`);
+        }
+
+        const order = this.getActiveOrder(id);
+        if (!isEmpty(order)) {
+            throw new Error(`Active order not found`);
+        }
+
+        const savedOrder = await this.orderModal.save(order);
+        if (isEmpty(savedOrder)) {
+            console.error(new Error(`Error saving active orde`));
+        }
+
+        // TODO remove from database
+        let oMap: Order[] = [];
+        if (tracker.type === 'BUY') {
+            oMap = this.bids;
+            oMap = oMap.filter((i) => i.id !== tracker.orderId); // remove from books
+            this.bids = oMap;
+        } else {
+            oMap = this.asks;
+            oMap = oMap.filter((i) => i.id !== tracker.orderId); // remove from books
+            this.asks = oMap;
+        }
+
+        const newActiveOrders = this.activeOrders.filter((i) => i.id !== tracker.orderId); // remove an active order
+        this.activeOrders = newActiveOrders;
     }
 
     /**
@@ -239,7 +230,7 @@ export class OrderBook {
      * @param orderId: string
      */
     public removeOrderTracker(orderId: string) {
-        //     o.orderTrackerMutex.Lock()
+        // o.orderTrackerMutex.Lock()
         // defer o.orderTrackerMutex.Unlock()
         // delete(o.orderTrackers, orderID)
     }

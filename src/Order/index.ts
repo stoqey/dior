@@ -2,7 +2,8 @@ import {ITime, OrderType, Action} from '../shared';
 
 export interface OrderTracker extends ITime {
     orderId: string;
-    type: string;
+    type: OrderType;
+    action: Action;
     price: number;
 }
 
