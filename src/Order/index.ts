@@ -57,6 +57,8 @@ export class Order implements OrderObject {
     stopPrice: number;
     side: boolean;
     canceled: boolean;
+    date: Date;
+    timestamp?: number;
 
     constructor(orderObject: OrderObject, options: OrderOptions) {
         this.options = options;
@@ -72,6 +74,8 @@ export class Order implements OrderObject {
             stopPrice,
             side,
             canceled,
+            date,
+            timestamp,
         } = orderObject;
 
         this.action = action;
@@ -85,6 +89,8 @@ export class Order implements OrderObject {
         this.stopPrice = stopPrice;
         this.side = side;
         this.canceled = canceled;
+        this.date = date;
+        this.timestamp = timestamp;
     }
 
     /**
@@ -121,7 +127,7 @@ export class Order implements OrderObject {
     /**
      * unfilledQty
      */
-    public unfilledQty(o: Order): number {
-        return o.qty - o.filledQty;
+    public unfilledQty(): number {
+        return this.qty - this.filledQty;
     }
 }

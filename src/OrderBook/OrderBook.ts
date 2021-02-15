@@ -264,7 +264,7 @@ export class OrderBook {
         // 	askOrderID = order.ID
         // }
 
-        const matched = false;
+        let matched = false;
         const bidOrderId: string = null;
         let askOrderId: string = null;
         let buyer: string = null;
@@ -290,25 +290,6 @@ export class OrderBook {
         // currentAON := order.Params.Is(ParamAON)
 
         for (const offer of offers) {
-            // 	oppositeTracker := iter.Key()
-            // 	oppositeOrder, ok := o.getActiveOrder(oppositeTracker.OrderID)
-            // 	if !ok {
-            // 		panic("should NEVER happen - tracker exists but active order does not")
-            // 	}
-            // 	oppositeAON := oppositeOrder.Params.Is(ParamAON)
-            // 	if oppositeOrder.IsCancelled() {
-            // 		removeOrders = append(removeOrders, oppositeOrder.ID) // mark order for removal
-            // 		continue                                              // don't match with this order
-            // 	}
-            // 	qty := min(order.UnfilledQty(), oppositeOrder.UnfilledQty())
-            // 	// ensure AONs are filled completely
-            // 	if currentAON && qty != order.UnfilledQty() {
-            // 		continue // couldn't find a match - we require AON but couldn't fill the order in one trade
-            // 	}
-            // 	if oppositeAON && qty != oppositeOrder.UnfilledQty() {
-            // 		continue // couldn't find a match - other offer requires AON but our order can't fill it completely
-            // 	}
-
             const oppositeTracker = offer;
             const oppositeOrder = this.getActiveOrder(oppositeTracker.id);
 
@@ -322,7 +303,64 @@ export class OrderBook {
                 continue; // don't match with this order
             }
 
-            const qty = this.min(order.UnfilledQty(), oppositeOrder.UnfilledQty());
+            const qty = this.min(order.unfilledQty(), oppositeOrder.unfilledQty());
+
+            if (currentAON && qty != order.unfilledQty()) {
+                continue; // couldn't find a match - we require AON but couldn't fill the order in one trade
+            }
+            if (oppositeAON && qty != oppositeOrder.unfilledQty()) {
+                continue; // couldn't find a match - other offer requires AON but our order can't fill it completely
+            }
+
+            let price = 0;
+
+            /**
+             * Case orderType
+             */
+            if (!oppositeOrder.type) {
+                this.panicOnOrderType(oppositeOrder);
+            }
+
+            if (oppositeOrder.type === 'market') {
+                continue; // two opposing market orders are usually forbidden (rejected) - continue matching
+            }
+
+            if (oppositeOrder.type === 'limit') {
+                price = oppositeOrder.price; // crossing the spread
+            }
+
+            /**
+             * Case typeLimit
+             */
+
+            const myPrice = order.price;
+
+            if (buying) {
+                if (oppositeOrder.type === 'limit') {
+                    if (myPrice < oppositeOrder.price) {
+                        matched = true;
+                        return matched; // other prices are going to be even higher than our limit
+                    } else {
+                        // our bid is higher or equal to their ask - set price to myPrice
+                        price = myPrice; // e.g. our bid is $20.10, their ask is $20 - trade executes at $20.10
+                    }
+                } else {
+                    // we have a limit, they are selling at our price
+                    price = myPrice;
+                }
+            } else {
+                // we're selling
+                if (oppositeOrder.type === 'limit') {
+                    if (myPrice > oppositeOrder.price) {
+                        matched = true;
+                        return matched; // we can't match since our ask is higher than the best bid
+                    } else {
+                        price = oppositeOrder.price; // set price to their bid
+                    }
+                } else {
+                    price = myPrice;
+                }
+            }
         }
         // for iter := offers.Iterator(); iter.Valid(); iter.Next() {
         // 	oppositeTracker := iter.Key()
@@ -430,5 +468,7 @@ export class OrderBook {
      * panicOnOrderType
      * @param order Order
      */
-    public panicOnOrderType(order: Order) {}
+    public panicOnOrderType(order: Order) {
+        console.log(`order type ${order && order.id} not implemented`);
+    }
 }
