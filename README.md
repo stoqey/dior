@@ -1,5 +1,13 @@
+<p align="center">
+  <h1 align="center"> Christian Dior </h1>
+</p>
 
-## Dior BETA
+<div align="center">
+
+<img src="./docs/christiandior.jpg"></img>
+
+</div>
+
 
 ## Tech
 - Couchbase for Order/Trades storage
@@ -66,3 +74,13 @@ Order book & trade books are per-instrument objects, one order book can only han
     * great summary of order types
 * https://github.com/enewhuis/liquibook
     * inspiration for some of the data structures and approaches to the problem
+
+<div align="center">
+
+<img src="docs/footer.jpg"></img>
+
+</div>
+
+<div align="center" >
+<h3>Stoqey Inc<h3>
+</div>
