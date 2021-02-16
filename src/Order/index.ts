@@ -125,7 +125,9 @@ export class Order implements OrderObject {
     /**
      * cancel
      */
-    public cancel() {}
+    public cancel() {
+        // cancel order and update from DB
+    }
 
     /**
      * unfilledQty
