@@ -1,10 +1,11 @@
 import 'mocha';
+import random from 'lodash/random';
 import uuid from 'uuid';
 import {expect} from 'chai';
 import {Order, OrderObject} from '../Order';
 import {OrderType} from '../shared';
 import {generateUUID} from './uuid';
-import {makeComparator} from './orders'
+import {makeComparator} from './orders';
 
 const sorter = makeComparator(false);
 
@@ -49,7 +50,7 @@ const asksOrders: OrderObject[] = new Array(15).fill(new Date()).map((x, index) 
         type: orderType,
         qty: 20,
         filledQty: 0,
-        price: sellPrice - +`0.${index}`,
+        price: random(1, 20),
         stopPrice: 0,
         canceled: false,
         date: removeMinutes(new Date(), index, true),
@@ -83,8 +84,9 @@ describe('OrderBook', () => {
     // });
 
     it('should sort ask order depending on', () => {
-        const asks = asksOrders.sort((a, b) => sorter(a,b));
-        console.log('all orders are', {asks: JSON.stringify(asks.map), bids: JSON.stringify(bids)});
+        const asks = asksOrders.sort(sorter);
+        console.log('All OG ask orders sorted are', JSON.stringify(asksOrders.map(i => i.price)));
+        console.log('All SORTED ask orders sorted are', JSON.stringify(asks.map(i => i.price)));
         expect(asks).to.be.not.empty;
     });
 });
