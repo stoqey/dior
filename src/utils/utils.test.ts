@@ -6,7 +6,7 @@ import {expect} from 'chai';
 import {Order, OrderObject} from '../Order';
 import {OrderType} from '../shared';
 import {generateUUID} from './uuid';
-import {makeComparator, sortSellOrders, sortOldestTime, sortLessPrice} from './orders';
+import {makeComparator, sortSellOrders, sortOldestTime, sortLessPrice, sortExpensivePrice, sortNewestTime} from './orders';
 
 const sorter = makeComparator(false);
 
@@ -84,15 +84,27 @@ describe('OrderBook', () => {
     //     expect(asks).to.be.not.empty;
     // });
 
-    it('should sort by price', () => {
-        console.log('All OG ask orders sorted are', JSON.stringify(asksOrders.map(i => i.price)));
-        console.log('All SORTED ask orders sorted are', JSON.stringify(asksOrders.sort(sortLessPrice).map(i => i.price)));
+    it('should sort by less price', () => {
+        console.log('All OG sortLessPrice are', JSON.stringify(asksOrders.map(i => i.price)));
+        console.log('All SORTED sortLessPrice are', JSON.stringify(asksOrders.sort(sortLessPrice).map(i => i.price)));
+        expect([1]).to.be.not.empty;
+    });
+
+    it('should sort by expensive price', () => {
+        console.log('All OG sortExpensivePrice are', JSON.stringify(asksOrders.map(i => i.price)));
+        console.log('All SORTED sortExpensivePrice are', JSON.stringify(asksOrders.sort(sortExpensivePrice).map(i => i.price)));
         expect([1]).to.be.not.empty;
     });
 
     it('should sort oldest time', () => {
-        console.log('All OG ask orders sorted are', JSON.stringify(asksOrders.map(i => moment(i.date).fromNow())));
-        console.log('All SORTED ask orders sorted are', JSON.stringify(asksOrders.sort(sortOldestTime).map(i => moment(i.date).fromNow())));
+        console.log('All OG sortOldestTime are', JSON.stringify(asksOrders.map(i => moment(i.date).fromNow())));
+        console.log('All SORTED sortOldestTime are', JSON.stringify(asksOrders.sort(sortOldestTime).map(i => moment(i.date).fromNow())));
+        expect([1]).to.be.not.empty;
+    });
+
+    it('should sort newest time', () => {
+        console.log('All OG sortNewestTime are', JSON.stringify(asksOrders.map(i => moment(i.date).fromNow())));
+        console.log('All SORTED sortNewestTime are', JSON.stringify(asksOrders.sort(sortNewestTime).map(i => moment(i.date).fromNow())));
         expect([1]).to.be.not.empty;
     });
 });
