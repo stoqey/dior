@@ -96,3 +96,10 @@ export const sortOldestTime = (a: OrderObject, b: OrderObject) => {
     }
     return -1;
 };
+
+export const sortNewestTime = (a: OrderObject, b: OrderObject) => {
+    if (new Date(a.date) > new Date(b.date)) {
+        return -1;
+    }
+    return 1;
+};
