@@ -14,7 +14,7 @@
     "lint": "tslint \"src/**/*.ts\" --project tsconfig.json",
     "build": "rimraf dist && tsc",
     "dev": "nodemon src/dev",
-    "ob": "mocha src/OrderBook/*test.ts --exit",
+    "utils": "mocha src/utils/*test.ts --exit",
     "prepublishOnly": "npm run build",
     "eslint": "eslint ./src --fix --ext=ts"
   },

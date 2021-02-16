@@ -3,8 +3,10 @@ import uuid from 'uuid';
 import {expect} from 'chai';
 import {Order, OrderObject} from '../Order';
 import {OrderType} from '../shared';
-import {generateUUID} from '../utils/uuid';
+import {generateUUID} from './uuid';
+import {makeComparator} from './orders'
 
+const sorter = makeComparator(false);
 
 const symbol = 'STQ';
 
@@ -73,10 +75,16 @@ const buyOrders: OrderObject[] = new Array(15).fill(new Date()).map((x, index) =
 });
 
 describe('OrderBook', () => {
+    // it('should sort ask order depending on', () => {
+    //     const asks = asksOrders;
+    //     const bids = buyOrders;
+    //     console.log('all orders are', {asks: JSON.stringify(asks), bids: JSON.stringify(bids)});
+    //     expect(asks).to.be.not.empty;
+    // });
+
     it('should sort ask order depending on', () => {
-        const asks = asksOrders;
-        const bids = buyOrders;
-        console.log('all orders are', {asks: JSON.stringify(asks), bids: JSON.stringify(bids)});
+        const asks = asksOrders.sort((a, b) => sorter(a,b));
+        console.log('all orders are', {asks: JSON.stringify(asks.map), bids: JSON.stringify(bids)});
         expect(asks).to.be.not.empty;
     });
 });
