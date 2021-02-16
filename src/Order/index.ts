@@ -33,7 +33,6 @@ export interface OrderObject extends ITime {
     filledQty: number;
     price: number;
     stopPrice: number;
-    side: boolean;
     canceled: boolean;
 }
 export class Order implements OrderObject {
