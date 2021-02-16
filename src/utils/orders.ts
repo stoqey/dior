@@ -42,3 +42,29 @@ export const makeComparator = (
         return factor === -1 ? -1 : 1;
     };
 };
+
+/**
+    Sell orders are sorted in ascending order by their ask price, and like buy orders, 
+    by ascending order by time stamp for orders with the same price. 
+    Orders with the lowest sell (ask) prices will be sold first. 
+    For orders with the same ask price, the order that arrives first will be sold first.
+ * @param a 
+ * @param b 
+ */
+export const sortSellOrders = (a: OrderObject, b: OrderObject) => {
+    // ascending order by their ask price
+    if (a.price > b.price) {
+        return 1;
+    }
+
+    // if (a.price === b.price) {
+    //     // by ascending order by time stamp for orders with the same price.
+    //     if (new Date(a.date) < new Date(b.date)) {
+    //         return -1;
+    //     }
+
+    //     return 0;
+    // }
+
+    return -1;
+};
