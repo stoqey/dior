@@ -1,4 +1,11 @@
+import {Model} from '@stoqey/sofa';
 import {ITime, OrderType, Action} from '../shared';
+
+const modalName = 'Order';
+// Create
+// Get
+// Query
+// Sort
 
 export interface OrderTracker extends ITime {
     orderId: string;
@@ -36,6 +43,7 @@ export interface OrderObject extends ITime {
     canceled: boolean;
 }
 export class Order implements OrderObject {
+    modal: Model;
     // OrderOptions
     options: OrderOptions;
 
@@ -60,6 +68,7 @@ export class Order implements OrderObject {
     timestamp?: number;
 
     constructor(orderObject: OrderObject, options: OrderOptions) {
+        this.modal = new Model(modalName);
         this.options = options;
         const {
             action,
@@ -130,5 +139,23 @@ export class Order implements OrderObject {
      */
     public unfilledQty(): number {
         return this.qty - this.filledQty;
+    }
+
+    /**
+     * save
+     */
+    public async save(order: Order): Promise<Order> {
+        try {
+            // save the order
+            const saved = await this.modal.save(order);
+            if (!saved) {
+                throw new Error('error saving the order');
+            }
+
+            return saved;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
 }
