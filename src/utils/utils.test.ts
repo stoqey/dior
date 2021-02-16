@@ -1,11 +1,12 @@
 import 'mocha';
 import random from 'lodash/random';
+import moment from 'moment';
 import uuid from 'uuid';
 import {expect} from 'chai';
 import {Order, OrderObject} from '../Order';
 import {OrderType} from '../shared';
 import {generateUUID} from './uuid';
-import {makeComparator, sortSellOrders} from './orders';
+import {makeComparator, sortSellOrders, sortOldestTime, sortLessPrice} from './orders';
 
 const sorter = makeComparator(false);
 
@@ -83,15 +84,15 @@ describe('OrderBook', () => {
     //     expect(asks).to.be.not.empty;
     // });
 
-    it('should sort ask order depending on price', () => {
+    it('should sort by price', () => {
         console.log('All OG ask orders sorted are', JSON.stringify(asksOrders.map(i => i.price)));
-        console.log('All SORTED ask orders sorted are', JSON.stringify(asksOrders.sort(sortSellOrders).map(i => i.price)));
+        console.log('All SORTED ask orders sorted are', JSON.stringify(asksOrders.sort(sortLessPrice).map(i => i.price)));
         expect([1]).to.be.not.empty;
     });
 
-    it('should sort ask order depending on price', () => {
-        console.log('All OG ask orders sorted are', JSON.stringify(asksOrders.map(i => i.price)));
-        console.log('All SORTED ask orders sorted are', JSON.stringify(asksOrders.sort(sortSellOrders).map(i => i.price)));
+    it('should sort oldest time', () => {
+        console.log('All OG ask orders sorted are', JSON.stringify(asksOrders.map(i => moment(i.date).fromNow())));
+        console.log('All SORTED ask orders sorted are', JSON.stringify(asksOrders.sort(sortOldestTime).map(i => moment(i.date).fromNow())));
         expect([1]).to.be.not.empty;
     });
 });

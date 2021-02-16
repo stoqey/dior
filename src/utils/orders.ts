@@ -57,14 +57,35 @@ export const sortSellOrders = (a: OrderObject, b: OrderObject) => {
         return 1;
     }
 
-    if (a.price === b.price) {
-        // by ascending order by time stamp for orders with the same price.
-        if (new Date(a.date) < new Date(b.date)) {
-            return 1;
-        }
+    // if (a.price === b.price) {
+    //     // by ascending order by time stamp for orders with the same price.
+    //     if (new Date(a.date) < new Date(b.date)) {
+    //         return 1;
+    //     }
 
-        return 0;
+    //     return 0;
+    // }
+
+    return -1;
+};
+
+export const sortLessPrice = (a: OrderObject, b: OrderObject) => {
+    // ascending order by their ask price
+    if (a.price > b.price) {
+        return 1;
     }
 
+    return -1;
+};
+
+/**
+ * Sort by oldest to newest
+ * @param a
+ * @param b
+ */
+export const sortOldestTime = (a: OrderObject, b: OrderObject) => {
+    if (new Date(a.date) > new Date(b.date)) {
+        return 1;
+    }
     return -1;
 };
