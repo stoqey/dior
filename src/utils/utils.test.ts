@@ -83,7 +83,13 @@ describe('OrderBook', () => {
     //     expect(asks).to.be.not.empty;
     // });
 
-    it('should sort ask order depending on', () => {
+    it('should sort ask order depending on price', () => {
+        console.log('All OG ask orders sorted are', JSON.stringify(asksOrders.map(i => i.price)));
+        console.log('All SORTED ask orders sorted are', JSON.stringify(asksOrders.sort(sortSellOrders).map(i => i.price)));
+        expect([1]).to.be.not.empty;
+    });
+
+    it('should sort ask order depending on price', () => {
         console.log('All OG ask orders sorted are', JSON.stringify(asksOrders.map(i => i.price)));
         console.log('All SORTED ask orders sorted are', JSON.stringify(asksOrders.sort(sortSellOrders).map(i => i.price)));
         expect([1]).to.be.not.empty;

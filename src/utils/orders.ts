@@ -57,14 +57,14 @@ export const sortSellOrders = (a: OrderObject, b: OrderObject) => {
         return 1;
     }
 
-    // if (a.price === b.price) {
-    //     // by ascending order by time stamp for orders with the same price.
-    //     if (new Date(a.date) < new Date(b.date)) {
-    //         return -1;
-    //     }
+    if (a.price === b.price) {
+        // by ascending order by time stamp for orders with the same price.
+        if (new Date(a.date) < new Date(b.date)) {
+            return 1;
+        }
 
-    //     return 0;
-    // }
+        return 0;
+    }
 
     return -1;
 };
