@@ -15,33 +15,6 @@ import {Order, OrderObject} from '../Order';
     For orders with the same ask price, the order that arrives first will be sold first.
 
  */
-export const makeComparator = (
-    priceReverse: boolean
-): ((a: OrderObject, b: OrderObject) => number) => {
-    let factor = -1;
-    if (priceReverse) {
-        factor = -1;
-    }
-
-    return function sortOrder(a: OrderObject, b: OrderObject): number {
-        if (a.type === 'market' && b.type !== 'market') {
-            return 1; // sort by -1
-        } else if (a.type !== 'market' && b.type === 'market') {
-            return -1;
-        } else if (a.type === 'market' && b.type === 'market') {
-            return a.timestamp < b.timestamp ? 1 : -1; // if both market order by time
-        }
-
-        const priceCmp = a.price - b.price;
-        if (priceCmp === 0) {
-            return a.timestamp < b.timestamp ? 1 : -1;
-        }
-        if (priceCmp < 0) {
-            return -1 * factor === -1 ? -1 : 1;
-        }
-        return factor === -1 ? -1 : 1;
-    };
-};
 
 /**
     Sell orders are sorted in ascending order by their ask price, and like buy orders, 
@@ -52,9 +25,34 @@ export const makeComparator = (
  * @param b 
  */
 export const sortSellOrders = (a: OrderObject, b: OrderObject) => {
-    // ascending order by their ask price
     if (a.price > b.price) {
         return 1;
+    }
+
+    if (a.price === b.price) {
+        if (new Date(a.date) > new Date(b.date)) {
+            return 1;
+        }
+
+        return -1;
+    }
+
+    return -1;
+};
+
+/**
+
+Buy orders are sorted in descending order by their bid price and ascending order by time stamp 
+for orders that have the same price. 
+Orders with the highest bid (buy) price are kept at the top of the queue and will be executed first. 
+For equal priced bids, the order that arrives first is executed first.
+
+ * @param a 
+ * @param b 
+ */
+export const sortBuyOrders = (a: OrderObject, b: OrderObject) => {
+    if (a.price > b.price) {
+        return -1; // at the top
     }
 
     if (a.price === b.price) {
@@ -66,7 +64,7 @@ export const sortSellOrders = (a: OrderObject, b: OrderObject) => {
         return -1;
     }
 
-    return -1;
+    return 1;
 };
 
 export const sortExpensivePrice = (a: OrderObject, b: OrderObject) => {
