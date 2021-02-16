@@ -71,7 +71,6 @@ export class Order implements OrderObject {
             filledQty,
             price,
             stopPrice,
-            side,
             canceled,
             date,
             timestamp,
@@ -86,7 +85,6 @@ export class Order implements OrderObject {
         this.filledQty = filledQty;
         this.price = price;
         this.stopPrice = stopPrice;
-        this.side = side;
         this.canceled = canceled;
         this.date = date;
         this.timestamp = timestamp;
