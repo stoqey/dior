@@ -69,8 +69,15 @@ export const sortSellOrders = (a: OrderObject, b: OrderObject) => {
     return -1;
 };
 
+export const sortExpensivePrice = (a: OrderObject, b: OrderObject) => {
+    if (a.price > b.price) {
+        return -1;
+    }
+
+    return 1;
+};
+
 export const sortLessPrice = (a: OrderObject, b: OrderObject) => {
-    // ascending order by their ask price
     if (a.price > b.price) {
         return 1;
     }
