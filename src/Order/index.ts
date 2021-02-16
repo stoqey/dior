@@ -100,6 +100,21 @@ export class Order implements OrderObject {
     }
 
     /**
+     * getOrder
+     */
+    public async getOrder(orderId: string): Promise<Order> {
+        try {
+            const order = await this.modal.findById(orderId);
+            if (!order) {
+                throw new Error('order not found');
+            }
+            return order;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+    /**
      * isCancelled
      */
     public isCancelled(): boolean {
