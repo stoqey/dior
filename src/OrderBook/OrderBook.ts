@@ -276,7 +276,7 @@ export class OrderBook {
      * @param order Order
      */
     public async submit(order: Order): Promise<boolean> {
-        let matched: boolean;
+        let matched = false;
 
         if (order.isBid()) {
             matched = await this.matchOrder(order, this.asks);
@@ -284,7 +284,7 @@ export class OrderBook {
             matched = await this.matchOrder(order, this.bids);
         }
 
-        let addToBooks = true;
+        let addToBooks = false;
         if (order.options.params.includes(OrderParams.IOC) && !order.isFilled()) {
             order.cancel(); // cancel the rest of the order
             const saved = await this.orderModal.save(order); // store the order (not in the books)
@@ -293,7 +293,7 @@ export class OrderBook {
             }
             addToBooks = false; // don't add the order to the books (keep it stored but not active)
         }
-        if (!order.isFilled() && addToBooks) {
+        if (!order.isFilled() && !addToBooks) {
             await this.addToBook(order); // store the order (in the books)
             return matched;
         }
