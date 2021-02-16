@@ -55,6 +55,7 @@
     "@types/lodash": "^4.14.168",
     "@types/node": "^10.0.3",
     "@types/source-map-support": "^0.4.0",
+    "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^3.4.0",
     "@typescript-eslint/parser": "^3.4.0",
     "eslint": "^6.8.0",
@@ -78,6 +79,7 @@
   },
   "dependencies": {
     "@stoqey/sofa": "^0.1.9",
-    "lodash": "^4.17.20"
+    "lodash": "^4.17.20",
+    "uuid": "^8.3.2"
   }
 }
