@@ -56,7 +56,6 @@ export class Order implements OrderObject {
     filledQty: number;
     price: number;
     stopPrice: number;
-    side: boolean;
     canceled: boolean;
     date: Date;
     timestamp?: number;
