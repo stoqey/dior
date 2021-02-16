@@ -23,37 +23,6 @@ export class OrderBook {
     orderTrackers: OrderTracker[];
 
     /**
-     * makeComparator
-     * FIFO - https://corporatefinanceinstitute.com/resources/knowledge/trading-investing/matching-orders/
-     */
-    public makeComparator() {
-        /**
-         
-            factor := 1
-            if priceReverse {
-                factor = -1
-            }
-            return func(a, b OrderTracker) bool {
-                if a.Type == TypeMarket && b.Type != TypeMarket {
-                    return true
-                } else if a.Type != TypeMarket && b.Type == TypeMarket {
-                    return false
-                } else if a.Type == TypeMarket && b.Type == TypeMarket {
-                    return a.Timestamp < b.Timestamp // if both market order by time
-                }
-                priceCmp := a.Price - b.Price
-                if priceCmp == 0 {
-                    return a.Timestamp < b.Timestamp
-                }
-                if priceCmp < 0 {
-                    return -1*factor == -1
-                }
-                return factor == -1
-            }
-         */
-    }
-
-    /**
      * Create a new OrderBook
      * @param instrument
      * @param marketPrice
