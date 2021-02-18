@@ -2,14 +2,20 @@ import uuid from 'uuid';
 import {Order} from './Order';
 import {OrderBook} from './OrderBook/OrderBook';
 import {Action, OrderType} from './shared';
+import {startCouchbaseAndNext} from './sofa/couchbase';
 
-export function main() {
+export async function main() {
     // TODO
     // create http server
     // create websocket server
     // Connect marketdata server (exodus)
     // expose events for update from order book
     // re-install orderbook
+    // Start couchbase
+    const started = await startCouchbaseAndNext();
+    if (!started) {
+        throw new Error('error starting couchbase');
+    }
     // Get latest currency
     // Populate orders, bids, and asks, active, trackers
     // Remove locks
