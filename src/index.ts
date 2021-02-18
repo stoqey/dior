@@ -11,12 +11,14 @@ export async function main() {
     // Connect marketdata server (exodus)
     // expose events for update from order book
     // re-install orderbook
-    // Start couchbase
+
+    // ✅ Start couchbase
+    // ✅ Get latest currency
     const started = await startCouchbaseAndNext();
     if (!started) {
         throw new Error('error starting couchbase');
     }
-    // Get latest currency
+
     // Populate orders, bids, and asks, active, trackers
     // Remove locks
     // Re-activate locked before shutdown (using workedOn: Date on field)
