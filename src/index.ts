@@ -7,7 +7,18 @@ export function main() {
     // TODO
     // create http server
     // create websocket server
+    // Connect marketdata server (exodus)
     // expose events for update from order book
+    // re-install orderbook
+    // Get latest currency
+    // Populate orders, bids, and asks, active, trackers
+    // Remove locks
+    // Re-activate locked before shutdown (using workedOn: Date on field)
+    // - re-activate all orders with workedOn: Date
+    // Background match-order sync
+    //
+    // TODO master slave,
+    // Shared server configs
 }
 
 /**

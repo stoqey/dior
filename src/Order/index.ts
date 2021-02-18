@@ -143,9 +143,11 @@ export class Order implements OrderObject {
     }
 
     /**
+     * Cancel an order
      * cancel
      */
     public cancel() {
+        // Use event to send cancel order
         // cancel order and update from DB
     }
 

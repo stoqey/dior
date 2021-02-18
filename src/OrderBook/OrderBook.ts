@@ -64,13 +64,17 @@ export class OrderBook {
      * setMarketPrice
      * @param price number
      */
-    public setMarketPrice(price: number) {}
+    public setMarketPrice(price: number) {
+        // updateMarketPrice
+        // Single doc
+    }
 
     /**
      * getActiveOrder
      * @param id string
      */
     public getActiveOrder(id: string): Order {
+        // TODO Query db
         return this.activeOrders.find((i) => i.id === id);
     }
 
@@ -109,6 +113,7 @@ export class OrderBook {
         await this.setActiveOrder(order);
         await this.removeOrderTracker(order.id);
 
+        // TODO Refresh the data from here
         return await this.orderModal.save(order);
     }
 
@@ -117,6 +122,15 @@ export class OrderBook {
      * @param order Order
      */
     public updateActiveOrder(order: Order) {}
+
+    /**
+     * refresh
+     */
+    public refresh() {
+        // Get all trades
+        // Sort buys
+        // Sort sells
+    }
 
     /**
      * removeFromBooks
@@ -178,6 +192,7 @@ export class OrderBook {
         // defer o.orderTrackerMutex.RUnlock()
         // tracker, ok := o.orderTrackers[orderID]
         // return tracker, ok
+        // GetandLock return tracker
     }
 
     /**
