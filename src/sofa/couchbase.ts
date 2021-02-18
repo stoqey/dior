@@ -1,8 +1,8 @@
 import {startSofa} from '@stoqey/sofa';
-import {log} from '@stoqeyx/env';
+import {log} from '../log';
 import get from 'lodash/get';
 import chalk from 'chalk';
-import {findCurrencyOrCreateIt} from './Currency.create';
+import {findCurrencyOrCreateIt} from './Currency';
 
 const connectionString = get(process.env, 'COUCHBASE_URL', 'couchbase://localhost');
 const bucketName = get(process.env, 'COUCHBASE_BUCKET', 'stq');
