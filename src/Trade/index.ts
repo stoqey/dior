@@ -25,7 +25,6 @@ export class Trade implements ITrade {
     bidOrderId: string;
     askOrderId: string;
     date: Date;
-    timestamp?: number;
 
     constructor(trade: ITrade) {
         const {
@@ -40,7 +39,6 @@ export class Trade implements ITrade {
             bidOrderId,
             askOrderId,
             date,
-            timestamp,
         } = trade;
 
         this.id = id;
@@ -54,6 +52,5 @@ export class Trade implements ITrade {
         this.bidOrderId = bidOrderId;
         this.askOrderId = askOrderId;
         this.date = date;
-        this.timestamp = timestamp;
     }
 }

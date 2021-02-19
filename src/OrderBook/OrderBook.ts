@@ -213,37 +213,37 @@ export class OrderBook {
      * getOrderTracker
      * @param orderId: string
      */
-    public getOrderTracker(orderId: string) {
-        // o.orderTrackerMutex.RLock()
-        // defer o.orderTrackerMutex.RUnlock()
-        // tracker, ok := o.orderTrackers[orderID]
-        // return tracker, ok
-        // GetandLock return tracker
-    }
+    // public getOrderTracker(orderId: string) {
+    //     // o.orderTrackerMutex.RLock()
+    //     // defer o.orderTrackerMutex.RUnlock()
+    //     // tracker, ok := o.orderTrackers[orderID]
+    //     // return tracker, ok
+    //     // GetandLock return tracker
+    // }
 
     /**
      * setOrderTracker
      * @param tracker OrderTracker
      */
-    public setOrderTracker(tracker: OrderTracker) {
-        // o.orderTrackerMutex.Lock()
-        // defer o.orderTrackerMutex.Unlock()
-        // if _, ok := o.orderTrackers[tracker.OrderID]; ok {
-        // 	return fmt.Errorf("order tracker with ID %d already exists", tracker.OrderID)
-        // }
-        // o.orderTrackers[tracker.OrderID] = tracker
-        // return nil
-    }
+    // public setOrderTracker(tracker: OrderTracker) {
+    //     // o.orderTrackerMutex.Lock()
+    //     // defer o.orderTrackerMutex.Unlock()
+    //     // if _, ok := o.orderTrackers[tracker.OrderID]; ok {
+    //     // 	return fmt.Errorf("order tracker with ID %d already exists", tracker.OrderID)
+    //     // }
+    //     // o.orderTrackers[tracker.OrderID] = tracker
+    //     // return nil
+    // }
 
     /**
      * removeOrderTracker
      * @param orderId: string
      */
-    public removeOrderTracker(orderId: string) {
-        // o.orderTrackerMutex.Lock()
-        // defer o.orderTrackerMutex.Unlock()
-        // delete(o.orderTrackers, orderID)
-    }
+    // public removeOrderTracker(orderId: string) {
+    //     // o.orderTrackerMutex.Lock()
+    //     // defer o.orderTrackerMutex.Unlock()
+    //     // delete(o.orderTrackers, orderID)
+    // }
 
     /**
      * add
@@ -323,8 +323,9 @@ export class OrderBook {
      * @param order Order
      * @param offers Order[]
      */
-    public async matchOrder(order: Order, offers: Order[]): Promise<boolean> {
-        let matched = false;
+    public async matchOrder(order: Order, offers: Order[]): Promise<Order> {
+        // TODO refresh orders, then loop thru all of them
+        let matched: Order;
         let bidOrderId: string = null;
         let askOrderId: string = null;
         let buyer: string = null;
@@ -340,7 +341,11 @@ export class OrderBook {
 
         const currentAON = order && order.params;
 
-        const removeOrders: string[] = [];
+        const removeOrders = async (order: Order) => {
+            // TODO remove order with other stuff
+            return await order.cancel();
+        };
+
         // removeOrders := make([]uint64, 0)
         // defer func() {
         // 	for _, orderID := range removeOrders {
@@ -350,16 +355,11 @@ export class OrderBook {
         // currentAON := order.Params.Is(ParamAON)
 
         for (const offer of offers) {
-            const oppositeTracker = offer;
-            const oppositeOrder = this.getActiveOrder(oppositeTracker.id);
-
-            if (!oppositeOrder) {
-                throw new Error('should NEVER happen - tracker exists but active order does not');
-            }
+            const oppositeOrder = offer;
 
             const oppositeAON = oppositeOrder.params;
-            if (oppositeOrder.isCancelled()) {
-                removeOrders.push(oppositeOrder.id); // mark order for removal
+            if (await oppositeOrder.isCancelled()) {
+                await oppositeOrder.cancel(); // mark order for removal
                 continue; // don't match with this order
             }
 
@@ -398,8 +398,8 @@ export class OrderBook {
             if (buying) {
                 if (oppositeOrder.type === 'limit') {
                     if (myPrice < oppositeOrder.price) {
-                        matched = true;
-                        return matched; // other prices are going to be even higher than our limit
+                        matched = oppositeOrder; // other prices are going to be even higher than our limit
+                        break;
                     } else {
                         // our bid is higher or equal to their ask - set price to myPrice
                         price = myPrice; // e.g. our bid is $20.10, their ask is $20 - trade executes at $20.10
@@ -412,8 +412,8 @@ export class OrderBook {
                 // we're selling
                 if (oppositeOrder.type === 'limit') {
                     if (myPrice > oppositeOrder.price) {
-                        matched = true;
-                        return matched; // we can't match since our ask is higher than the best bid
+                        // we can't match since our ask is higher than the best bid
+                        break;
                     } else {
                         price = oppositeOrder.price; // set price to their bid
                     }
@@ -446,25 +446,27 @@ export class OrderBook {
                 askOrderId: askOrderId,
             });
 
-            this.tradeBook.enter(newTrade);
+            await this.tradeBook.enter(newTrade);
 
-            this.setMarketPrice(price);
+            // TODO after entered into tradeBook
+            await this.setMarketPrice(price);
 
-            matched = true;
+            matched = oppositeOrder;
 
             if (oppositeOrder.unfilledQty() === 0) {
                 // if the other order is filled completely - remove it from the order book
-                removeOrders.push(oppositeOrder.id);
+                await removeOrders(oppositeOrder);
             } else {
-                this.updateActiveOrder(oppositeOrder);
-                return matched;
-            }
-            if (order.isFilled()) {
-                return matched;
+                await this.updateActiveOrder(oppositeOrder);
             }
         }
 
-        return true;
+        // If order has been filled
+        if (order.isFilled()) {
+            await removeOrders(order);
+        }
+
+        return matched;
     }
 
     /**
