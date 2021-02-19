@@ -20,6 +20,8 @@ async function main() {
         throw new Error('error starting couchbase');
     }
 
+    const ob = OrderBook.app;
+
     // Populate orders, bids, and asks, active, trackers
     // Remove locks
     // Re-activate locked before shutdown (using workedOn: Date on field)

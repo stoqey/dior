@@ -23,7 +23,10 @@ export class OrderBook {
     orderTrackers: OrderTracker[];
     static _instance: OrderBook;
 
-    public static get Instance(): OrderBook {
+    /**
+     * Default instance
+     */
+    public static get app(): OrderBook {
         return this._instance || (this._instance = new this());
     }
 
