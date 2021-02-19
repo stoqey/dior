@@ -3,6 +3,7 @@ import includes from 'lodash/includes';
 import {log} from '../log';
 
 const modelName = 'Currency';
+const instrument = 'STQ';
 
 export interface Currency {
     _type: string;
@@ -28,15 +29,14 @@ export const CurrencyModel = new Model(modelName);
 export const findCurrencyOrCreateIt = async () => {
     const model = new Model('Currency');
     const collection = model.getCollection();
-    const currencyKey = 'currency';
 
     const newCurrencyDocument: Currency = {
         _type: 'Currency',
         _scope: '_default',
-        id: currencyKey,
+        id: instrument,
         asset: 3300000,
         value: 3,
-        symbol: 'STQ',
+        symbol: instrument,
         change: 0,
         changePct: 0,
         high: 3,
@@ -48,7 +48,7 @@ export const findCurrencyOrCreateIt = async () => {
 
     const createNewCurrency = async () => {
         try {
-            await collection.upsert(currencyKey, newCurrencyDocument);
+            await collection.upsert(instrument, newCurrencyDocument);
             log(`Create currency document`, newCurrencyDocument);
         } catch (error) {
             process.exit(1);
