@@ -65,6 +65,7 @@ export class Order implements OrderObject {
     canceled: boolean;
     date: Date;
     timestamp?: number;
+    options: any;
 
     constructor(orderObject: OrderObject) {
         this.modal = OrderModal;
