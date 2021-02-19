@@ -81,7 +81,6 @@ export class Order implements OrderObject {
             stopPrice,
             canceled,
             date,
-            timestamp,
             stop,
             params,
             gtc,
@@ -107,7 +106,6 @@ export class Order implements OrderObject {
         this.stopPrice = stopPrice;
         this.canceled = canceled;
         this.date = date;
-        this.timestamp = timestamp;
     }
 
     /**
@@ -157,9 +155,21 @@ export class Order implements OrderObject {
      * Cancel an order
      * cancel
      */
-    public cancel() {
+    public async cancel(): Promise<boolean> {
         // Use event to send cancel order
         // cancel order and update from DB
+        try {
+            // TODO check if not active and stop it
+            const deletedOrder = await this.modal.delete(this.id);
+            if (deletedOrder) {
+                return true;
+            }
+
+            throw new Error('error canceling order');
+        } catch (error) {
+            console.error(error);
+            return error;
+        }
     }
 
     /**

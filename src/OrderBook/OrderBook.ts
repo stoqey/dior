@@ -5,6 +5,7 @@ import {TradeBook} from '../TradeBook';
 import {Trade} from '../Trade';
 import {getAllOrders, OrderModal} from '../Order/Order.modal';
 import {Currency, CurrencyModel} from '../sofa/Currency';
+import {sortBuyOrders, sortSellOrders} from '../utils/orders';
 
 const minQty = 1;
 
@@ -65,18 +66,22 @@ export class OrderBook {
      */
     public async start(instrument: string) {
         try {
-            // Find currency
-            const thisCurrency = await CurrencyModel.findById(instrument);
+            // Set MarketPrice
+            const thisCurrency: Currency = await CurrencyModel.findById(instrument);
             if (!isEmpty(thisCurrency)) {
-                this.setMarketPrice(thisCurrency);
+                this.setMarketPrice(thisCurrency.close);
             }
 
+            // Set active, bids, and asks
             const allOrders: Order[] = await getAllOrders(); // all orders, not trackers
             if (!isEmpty(allOrders)) {
                 this.activeOrders = allOrders.filter((i) => i.workedOn !== null); // all orders with locks
-                this.bids = allOrders.filter((i) => i.action === 'BUY');
-                this.asks = allOrders.filter((i) => i.action === 'SELL');
+                this.bids = allOrders.filter((i) => i.action === 'BUY').sort(sortBuyOrders);
+                this.asks = allOrders.filter((i) => i.action === 'SELL').sort(sortSellOrders);
             }
+
+            // Order modal and tradesModal
+            this.orderModal = OrderModal;
         } catch (error) {
             console.error(error);
             throw error;
@@ -127,20 +132,6 @@ export class OrderBook {
      * @param order Order
      */
     public async addToBook(order: Order) {
-        const offers: Order[] = [];
-
-        const price = order.price;
-
-        const tracker: OrderTracker = {
-            orderId: order.id,
-            type: order.type,
-            price,
-            action: order.action,
-            date: new Date(),
-        };
-
-        this.setOrderTracker(tracker);
-
         if (order.isBid()) {
             this.bids.push(order); // enter pointer to the tree
         } else {
@@ -148,9 +139,7 @@ export class OrderBook {
         }
 
         await this.setActiveOrder(order);
-        await this.removeOrderTracker(order.id);
 
-        // TODO Refresh the data from here
         return await this.orderModal.save(order);
     }
 

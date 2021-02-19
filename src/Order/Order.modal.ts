@@ -2,7 +2,7 @@ import {Model} from '@stoqey/sofa';
 import {Order} from '.';
 
 const modalName = 'Order';
-export const orderTrackerFields = ['orderId', 'type', 'action', 'price']; // for DB views
+export const orderTrackerFields = ['id', 'type', 'action', 'price']; // for DB views
 
 export const OrderModal = new Model(modalName);
 
