@@ -3,7 +3,7 @@ import includes from 'lodash/includes';
 import {log} from '../log';
 
 const modelName = 'Currency';
-const instrument = 'STQ';
+export const instrument = 'STQ';
 
 export interface Currency {
     _type: string;

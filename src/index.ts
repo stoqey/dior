@@ -1,9 +1,14 @@
 import 'dotenv/config';
+import _get from 'lodash/get';
+import chalk from 'chalk';
 import uuid from 'uuid';
 import {Order} from './Order';
 import {OrderBook} from './OrderBook/OrderBook';
 import {Action, OrderType} from './shared';
 import {startCouchbaseAndNext} from './sofa/couchbase';
+import {log} from './log';
+
+const instrument = _get(process.env, 'INSTRUMENT', 'STQ');
 
 async function main() {
     // TODO
@@ -19,10 +24,13 @@ async function main() {
     if (!started) {
         throw new Error('error starting couchbase');
     }
+    log(chalk.green(`✅ started the ${instrument} Orderbook`));
 
-    const ob = OrderBook.app;
+    // ✅ Get the default Orderbook
+    const ob = OrderBook.app; // get the default orderbook
+    await ob.start(instrument); // the order book now, Populate orders, bids, and asks, active, trackers
+    log(chalk.green(`✅ started the ${instrument} Orderbook`));
 
-    // Populate orders, bids, and asks, active, trackers
     // Remove locks
     // Re-activate locked before shutdown (using workedOn: Date on field)
     // - re-activate all orders with workedOn: Date
