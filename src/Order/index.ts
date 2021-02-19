@@ -1,5 +1,6 @@
 import {Model} from '@stoqey/sofa';
 import {ITime, OrderType, Action} from '../shared';
+import {OrderModal} from './Order.modal';
 
 const modalName = 'Order';
 // Create
@@ -27,7 +28,7 @@ export interface OrderOptions {
     gtd: boolean; // good-till-date - keep order active until the provided date (including the date)
 }
 
-export interface OrderObject extends ITime {
+export interface OrderObject extends ITime, OrderOptions {
     // time
     // date: Date;
     // timestamp?: number;
@@ -44,14 +45,12 @@ export interface OrderObject extends ITime {
 }
 export class Order implements OrderObject {
     modal: Model;
-    // OrderOptions
-    options: OrderOptions;
 
-    // stop = false;
-    // params: OrderParams[];
-    // gtc: boolean;
-    // gfd: boolean;
-    // gtd: boolean;
+    stop = false;
+    params: OrderParams[];
+    gtc: boolean;
+    gfd: boolean;
+    gtd: boolean;
 
     // OrderObject
     action: Action;
@@ -67,9 +66,9 @@ export class Order implements OrderObject {
     date: Date;
     timestamp?: number;
 
-    constructor(orderObject: OrderObject, options: OrderOptions) {
-        this.modal = new Model(modalName);
-        this.options = options;
+    constructor(orderObject: OrderObject) {
+        this.modal = OrderModal;
+
         const {
             action,
             id,
@@ -83,7 +82,19 @@ export class Order implements OrderObject {
             canceled,
             date,
             timestamp,
+            stop,
+            params,
+            gtc,
+            gfd,
+            gtd,
         } = orderObject;
+
+        // Options
+        this.stop = stop;
+        this.params = params;
+        this.gtc = gtc;
+        this.gfd = gfd;
+        this.gtd = gtd;
 
         this.action = action;
         this.id = id;
