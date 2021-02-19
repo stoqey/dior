@@ -34,32 +34,10 @@ export class OrderBook {
 
     private constructor() {}
 
-    /**
-     * Create a new OrderBook
-     * @param instrument
-     * @param marketPrice
-     * @param tradeBook
-     * @param orderModal
-     */
-    // constructor(
-    //     instrument: string,
-    //     marketPrice: number,
-    //     tradeBook: TradeBook,
-    //     orderModal: typeof OrderModal
-    // ) {
-    //     // Get marketprice
-    //     // Set marketPrice
-    //     // Get all orders
-    //     // Set bids, active and set orders
-    //     this.instrument = instrument;
-    //     this.marketPrice = marketPrice;
-    //     this.asks = []; // TODO restore
-    //     this.bids = []; // TODO restore
-    //     this.orderTrackers = [];
-    //     this.activeOrders = [];
-    //     this.orderModal = orderModal;
-    //     this.tradeBook = tradeBook;
-    // }
+    // Get marketprice
+    // Set marketPrice
+    // Get all orders
+    // Set bids, active and set orders
 
     /**
      * start
@@ -85,7 +63,6 @@ export class OrderBook {
         } catch (error) {
             console.error(error);
             throw error;
-            process.exit(1);
         }
     }
 
@@ -125,20 +102,23 @@ export class OrderBook {
      * setActiveOrder
      * @param order Order
      */
-    public setActiveOrder(order: Order) {}
+    public async setActiveOrder(order: Order) {}
 
     /**
      * addToBook
      * @param order Order
      */
-    public async addToBook(order: Order) {
+    public async addToBook(order: Order, isActive: boolean) {
+        // Update local
         if (order.isBid()) {
             this.bids.push(order); // enter pointer to the tree
         } else {
             this.asks.push(order); // enter pointer to the tree
         }
 
-        await this.setActiveOrder(order);
+        if (isActive) {
+            await this.setActiveOrder(order);
+        }
 
         return await this.orderModal.save(order);
     }
@@ -147,12 +127,12 @@ export class OrderBook {
      * updateActiveOrder
      * @param order Order
      */
-    public updateActiveOrder(order: Order) {}
+    public async updateActiveOrder(order: Order) {}
 
     /**
      * refresh
      */
-    public refresh() {
+    public async refresh() {
         // Get all trades
         // Sort buys
         // Sort sells
@@ -175,7 +155,7 @@ export class OrderBook {
 
         const savedOrder = await this.orderModal.save(order);
         if (isEmpty(savedOrder)) {
-            console.error(new Error(`Error saving active orde`));
+            console.error(new Error(`Error saving active order`));
         }
 
         // TODO remove from database
@@ -193,57 +173,6 @@ export class OrderBook {
         const newActiveOrders = this.activeOrders.filter((i) => i.id !== tracker.orderId); // remove an active order
         this.activeOrders = newActiveOrders;
     }
-
-    /**
-     * cancel
-     * @param id string
-     */
-    public cancel(id: string) {
-        // o.orderMutex.RLock()
-        // order, ok := o.activeOrders[id]
-        // o.orderMutex.RUnlock()
-        // if !ok {
-        //     return nil
-        // }
-        // order.Cancel()
-        // return o.updateActiveOrder(order)
-    }
-
-    /**
-     * getOrderTracker
-     * @param orderId: string
-     */
-    // public getOrderTracker(orderId: string) {
-    //     // o.orderTrackerMutex.RLock()
-    //     // defer o.orderTrackerMutex.RUnlock()
-    //     // tracker, ok := o.orderTrackers[orderID]
-    //     // return tracker, ok
-    //     // GetandLock return tracker
-    // }
-
-    /**
-     * setOrderTracker
-     * @param tracker OrderTracker
-     */
-    // public setOrderTracker(tracker: OrderTracker) {
-    //     // o.orderTrackerMutex.Lock()
-    //     // defer o.orderTrackerMutex.Unlock()
-    //     // if _, ok := o.orderTrackers[tracker.OrderID]; ok {
-    //     // 	return fmt.Errorf("order tracker with ID %d already exists", tracker.OrderID)
-    //     // }
-    //     // o.orderTrackers[tracker.OrderID] = tracker
-    //     // return nil
-    // }
-
-    /**
-     * removeOrderTracker
-     * @param orderId: string
-     */
-    // public removeOrderTracker(orderId: string) {
-    //     // o.orderTrackerMutex.Lock()
-    //     // defer o.orderTrackerMutex.Unlock()
-    //     // delete(o.orderTrackers, orderID)
-    // }
 
     /**
      * add
@@ -304,13 +233,13 @@ export class OrderBook {
             }
 
             if (!addToBooks) {
-                await this.addToBook(order); // store the order (in the books)
+                await this.addToBook(order, true); // store the order (in the books) and order is still active
                 return true;
             }
         }
 
-        if (addToBooks) {
-            await this.addToBook(order); // store the order (in the books)
+        if (order.isFilled() && addToBooks) {
+            await this.addToBook(order, false); // store the order (in the books), but not active
         }
 
         return true;
@@ -374,6 +303,7 @@ export class OrderBook {
 
             const qty = this.min(order.unfilledQty(), oppositeOrder.unfilledQty());
 
+            // TODO Check AON
             if (currentAON && qty != order.unfilledQty()) {
                 continue; // couldn't find a match - we require AON but couldn't fill the order in one trade
             }
@@ -485,6 +415,6 @@ export class OrderBook {
      * @param order Order
      */
     public panicOnOrderType(order: Order) {
-        console.log(`order type ${order && order.id} not implemented`);
+        console.error(`order type ${order && order.id} not implemented`);
     }
 }
