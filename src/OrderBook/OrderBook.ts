@@ -286,17 +286,19 @@ export class OrderBook {
      * @param order Order
      */
     public async submit(order: Order): Promise<boolean> {
-        let matched = false;
+        const matched = false;
+
+        let matchOrder = null;
 
         if (order.isBid()) {
-            matched = await this.matchOrder(order, this.asks);
+            matchOrder = await this.matchOrder(order, this.asks);
         } else {
-            matched = await this.matchOrder(order, this.bids);
+            matchOrder = await this.matchOrder(order, this.bids);
         }
 
         let addToBooks = false;
         if (order.params.includes(OrderParams.IOC) && !order.isFilled()) {
-            order.cancel(); // cancel the rest of the order
+            await order.cancel(); // cancel the rest of the order
             const saved = await this.orderModal.save(order); // store the order (not in the books)
             if (saved) {
                 return matched;
@@ -323,9 +325,10 @@ export class OrderBook {
      * @param order Order
      * @param offers Order[]
      */
-    public async matchOrder(order: Order, offers: Order[]): Promise<Order> {
+    public async matchOrder(order: Order, offers: Order[]): Promise<{order: Order; trade: Trade}> {
         // TODO refresh orders, then loop thru all of them
         let matched: Order;
+        let trade: Trade;
         let bidOrderId: string = null;
         let askOrderId: string = null;
         let buyer: string = null;
@@ -446,9 +449,11 @@ export class OrderBook {
                 askOrderId: askOrderId,
             });
 
-            await this.tradeBook.enter(newTrade);
+            trade = newTrade;
 
             // TODO after entered into tradeBook
+            // await this.tradeBook.enter(newTrade);
+
             await this.setMarketPrice(price);
 
             matched = oppositeOrder;
@@ -466,7 +471,7 @@ export class OrderBook {
             await removeOrders(order);
         }
 
-        return matched;
+        return {order: matched, trade};
     }
 
     /**
