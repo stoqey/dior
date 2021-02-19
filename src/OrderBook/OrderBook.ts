@@ -21,6 +21,13 @@ export class OrderBook {
     bids: Order[];
     asks: Order[];
     orderTrackers: OrderTracker[];
+    static _instance: OrderBook;
+
+    public static get Instance(): OrderBook {
+        return this._instance || (this._instance = new this());
+    }
+
+    private constructor() {}
 
     /**
      * Create a new OrderBook
@@ -29,21 +36,25 @@ export class OrderBook {
      * @param tradeBook
      * @param orderModal
      */
-    constructor(
-        instrument: string,
-        marketPrice: number,
-        tradeBook: TradeBook,
-        orderModal: typeof OrderModal
-    ) {
-        this.instrument = instrument;
-        this.marketPrice = marketPrice;
-        this.asks = []; // TODO restore
-        this.bids = []; // TODO restore
-        this.orderTrackers = [];
-        this.activeOrders = [];
-        this.orderModal = orderModal;
-        this.tradeBook = tradeBook;
-    }
+    // constructor(
+    //     instrument: string,
+    //     marketPrice: number,
+    //     tradeBook: TradeBook,
+    //     orderModal: typeof OrderModal
+    // ) {
+    //     // Get marketprice
+    //     // Set marketPrice
+    //     // Get all orders
+    //     // Set bids, active and set orders
+    //     this.instrument = instrument;
+    //     this.marketPrice = marketPrice;
+    //     this.asks = []; // TODO restore
+    //     this.bids = []; // TODO restore
+    //     this.orderTrackers = [];
+    //     this.activeOrders = [];
+    //     this.orderModal = orderModal;
+    //     this.tradeBook = tradeBook;
+    // }
 
     /**
      * getBids
