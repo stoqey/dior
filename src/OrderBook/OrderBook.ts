@@ -3,7 +3,8 @@ import isEmpty from 'lodash/isEmpty';
 import {Order, OrderParams, OrderTracker} from '../Order';
 import {TradeBook} from '../TradeBook';
 import {Trade} from '../Trade';
-import {OrderModal} from '../Order/Order.modal';
+import {getAllOrders, OrderModal} from '../Order/Order.modal';
+import {Currency, CurrencyModel} from '../sofa/Currency';
 
 const minQty = 1;
 
@@ -60,6 +61,30 @@ export class OrderBook {
     // }
 
     /**
+     * start
+     */
+    public async start(instrument: string) {
+        try {
+            // Find currency
+            const thisCurrency = await CurrencyModel.findById(instrument);
+            if (!isEmpty(thisCurrency)) {
+                this.setMarketPrice(thisCurrency);
+            }
+
+            const allOrders: Order[] = await getAllOrders(); // all orders, not trackers
+            if (!isEmpty(allOrders)) {
+                this.activeOrders = allOrders.filter((i) => i.workedOn !== null); // all orders with locks
+                this.bids = allOrders.filter((i) => i.action === 'BUY');
+                this.asks = allOrders.filter((i) => i.action === 'SELL');
+            }
+        } catch (error) {
+            console.error(error);
+            throw error;
+            process.exit(1);
+        }
+    }
+
+    /**
      * getBids
      */
     public getBids() {}
@@ -78,9 +103,8 @@ export class OrderBook {
      * setMarketPrice
      * @param price number
      */
-    public setMarketPrice(price: number) {
-        // updateMarketPrice
-        // Single doc
+    public setMarketPrice(price: number): void {
+        this.marketPrice = price;
     }
 
     /**
@@ -112,7 +136,6 @@ export class OrderBook {
             type: order.type,
             price,
             action: order.action,
-            timestamp: Date.now(),
             date: new Date(),
         };
 
@@ -254,7 +277,7 @@ export class OrderBook {
             return false;
         }
 
-        if (order.options.stop && order.stopPrice === 0) {
+        if (order.stop && order.stopPrice === 0) {
             console.error(ErrInvalidStopPrice);
             return false;
         }
@@ -283,7 +306,7 @@ export class OrderBook {
         }
 
         let addToBooks = false;
-        if (order.options.params.includes(OrderParams.IOC) && !order.isFilled()) {
+        if (order.params.includes(OrderParams.IOC) && !order.isFilled()) {
             order.cancel(); // cancel the rest of the order
             const saved = await this.orderModal.save(order); // store the order (not in the books)
             if (saved) {
@@ -326,7 +349,7 @@ export class OrderBook {
             askOrderId = order.id;
         }
 
-        const currentAON = order.options && order.options.params;
+        const currentAON = order && order.params;
 
         const removeOrders: string[] = [];
         // removeOrders := make([]uint64, 0)
@@ -345,7 +368,7 @@ export class OrderBook {
                 throw new Error('should NEVER happen - tracker exists but active order does not');
             }
 
-            const oppositeAON = oppositeOrder.options && oppositeOrder.options.params;
+            const oppositeAON = oppositeOrder.params;
             if (oppositeOrder.isCancelled()) {
                 removeOrders.push(oppositeOrder.id); // mark order for removal
                 continue; // don't match with this order
@@ -429,7 +452,6 @@ export class OrderBook {
                 instrument: order.instrument,
                 qty,
                 price,
-                timestamp: Date.now(),
                 date: new Date(),
                 bidOrderId: bidOrderId,
                 askOrderId: askOrderId,
