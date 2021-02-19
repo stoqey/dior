@@ -182,10 +182,10 @@ export class Order implements OrderObject {
     /**
      * save
      */
-    public async save(order: Order): Promise<Order> {
+    public async save(): Promise<Order> {
         try {
             // save the order
-            const saved = await this.modal.save(order);
+            const saved = await this.modal.save(this);
             if (!saved) {
                 throw new Error('error saving the order');
             }
