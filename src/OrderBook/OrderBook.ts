@@ -286,9 +286,7 @@ export class OrderBook {
      * @param order Order
      */
     public async submit(order: Order): Promise<boolean> {
-        const matched = false;
-
-        let matchOrder = null;
+        let matchOrder: {matched: Order; trade?: Trade} = null;
 
         if (order.isBid()) {
             matchOrder = await this.matchOrder(order, this.asks);
@@ -296,21 +294,26 @@ export class OrderBook {
             matchOrder = await this.matchOrder(order, this.bids);
         }
 
-        let addToBooks = false;
-        if (order.params.includes(OrderParams.IOC) && !order.isFilled()) {
-            await order.cancel(); // cancel the rest of the order
-            const saved = await this.orderModal.save(order); // store the order (not in the books)
-            if (saved) {
-                return matched;
+        let addToBooks = !isEmpty(matchOrder.trade) ? true : false;
+
+        if (!order.isFilled()) {
+            if (order.params.includes(OrderParams.IOC)) {
+                await order.cancel(); // cancel the rest of the order
+                addToBooks = false; // don't add the order to the books (keep it stored but not active)
+                return;
             }
-            addToBooks = false; // don't add the order to the books (keep it stored but not active)
-        }
-        if (!order.isFilled() && !addToBooks) {
-            await this.addToBook(order); // store the order (in the books)
-            return matched;
+
+            if (!addToBooks) {
+                await this.addToBook(order); // store the order (in the books)
+                return true;
+            }
         }
 
-        return matched;
+        if (addToBooks) {
+            await this.addToBook(order); // store the order (in the books)
+        }
+
+        return true;
     }
 
     min = (q1: number, q2: number): number => {
@@ -325,7 +328,10 @@ export class OrderBook {
      * @param order Order
      * @param offers Order[]
      */
-    public async matchOrder(order: Order, offers: Order[]): Promise<{order: Order; trade: Trade}> {
+    public async matchOrder(
+        order: Order,
+        offers: Order[]
+    ): Promise<{matched: Order; trade: Trade}> {
         // TODO refresh orders, then loop thru all of them
         let matched: Order;
         let trade: Trade;
@@ -471,7 +477,7 @@ export class OrderBook {
             await removeOrders(order);
         }
 
-        return {order: matched, trade};
+        return {matched, trade};
     }
 
     /**
