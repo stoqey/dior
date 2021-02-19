@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "tslint \"src/**/*.ts\" --project tsconfig.json",
     "build": "rimraf dist && tsc",
-    "dev": "nodemon src/dev",
+    "dev": "nodemon src/index.ts",
     "utils": "mocha src/utils/*test.ts --exit",
     "prepublishOnly": "npm run build",
     "eslint": "eslint ./src --fix --ext=ts"
@@ -54,10 +54,12 @@
   "devDependencies": {
     "@types/chai": "^4.2.15",
     "@types/debug": "^4.1.5",
+    "@types/dotenv": "^8.2.0",
     "@types/lodash": "^4.14.168",
     "@types/mocha": "^8.2.0",
     "@types/moment": "^2.13.0",
     "@types/node": "^10.0.3",
+    "@types/nodemon": "^1.19.0",
     "@types/source-map-support": "^0.4.0",
     "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^3.4.0",
@@ -86,8 +88,10 @@
   },
   "dependencies": {
     "@stoqey/sofa": "^0.1.9",
+    "dotenv": "^8.2.0",
     "lodash": "^4.17.20",
     "moment": "^2.29.1",
+    "nodemon": "^2.0.7",
     "uuid": "^8.3.2"
   }
 }

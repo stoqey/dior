@@ -1,10 +1,11 @@
+import 'dotenv/config';
 import uuid from 'uuid';
 import {Order} from './Order';
 import {OrderBook} from './OrderBook/OrderBook';
 import {Action, OrderType} from './shared';
 import {startCouchbaseAndNext} from './sofa/couchbase';
 
-export async function main() {
+async function main() {
     // TODO
     // create http server
     // create websocket server
@@ -43,3 +44,5 @@ export const order = async (ob: OrderBook, orderReq: Order) => {
         throw new Error('error adding new order to order book');
     }
 };
+
+main();
