@@ -32,6 +32,8 @@ async function main() {
     await ob.start(instrument); // the order book now, Populate orders, bids, and asks, active, trackers
     log(chalk.green(`✅ started the ${instrument} Orderbook`));
 
+    // Add clients from here
+
     // Remove locks
     // Re-activate locked before shutdown (using workedOn: Date on field)
     // - re-activate all orders with workedOn: Date

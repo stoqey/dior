@@ -21,7 +21,9 @@ export async function clients(): Promise<boolean> {
 
         log(`starting ${appName} on ${PORT}`);
 
-        // 2. Redis
+        // Add broker client
+        // Add market data client
+        // Add sockets data client
         // App add web sockets
         // runWebsocket(app, nrp);
 
