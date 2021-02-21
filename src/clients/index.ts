@@ -2,17 +2,16 @@ import nanoexpress from 'nanoexpress';
 import cors from 'cors';
 
 import './sentry';
-import {log} from './log';
+import {log} from '../log';
 
-import {PORT, appName} from './config';
+import {PORT, appName} from '../config';
 
 // BrokerClient
 // MarketData Client
 // Socket app
 
-export async function runApp(): Promise<boolean> {
+export async function clients(): Promise<boolean> {
     try {
-
         const app = nanoexpress();
 
         const corsOptions = {
@@ -22,9 +21,8 @@ export async function runApp(): Promise<boolean> {
 
         app.use(cors(corsOptions));
 
-
         log(`starting ${appName} on ${PORT}`);
-    
+
         // 2. Redis
         // App add web sockets
         // runWebsocket(app, nrp);

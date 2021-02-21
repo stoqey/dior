@@ -1,4 +1,3 @@
-
 import isEmpty from 'lodash/isEmpty';
 
 export const JSONDATA = (data: Record<string, any> | string): Record<string, any> | null => {
