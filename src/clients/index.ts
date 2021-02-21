@@ -1,9 +1,7 @@
 import nanoexpress from 'nanoexpress';
 import cors from 'cors';
 
-import './sentry';
 import {log} from '../log';
-
 import {PORT, appName} from '../config';
 
 // BrokerClient

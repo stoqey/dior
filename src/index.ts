@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import './sentry';
 import _get from 'lodash/get';
 import chalk from 'chalk';
 import uuid from 'uuid';

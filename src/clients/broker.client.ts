@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import nanoexpress, {nanoexpressApp} from 'nanoexpress';
-
-import './sentry';
 import {MarketDataType} from '@stoqey/client-graphql';
-import {log} from '../log';
 
+import {log} from '../log';
 import {Currency, CurrencyModel} from '../sofa/Currency';
 
 export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {

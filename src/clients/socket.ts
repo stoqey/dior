@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import nanoexpress from 'nanoexpress';
+import {isEmpty} from 'lodash';
+
 import {APPEVENTS, AppEvents} from '../events';
 import {JSONDATA} from '../utils';
 import {log} from '../log';
-import {isEmpty} from 'lodash';
 
 interface Imessage {
     type: 'get' | 'add' | 'update' | 'cancel';
