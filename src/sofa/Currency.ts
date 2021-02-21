@@ -14,14 +14,14 @@ export interface Currency {
     value: number;
     asset: number;
 
-    // For market data
-    change: number;
-    changePct: number;
+    changePct?: number;
+    change?: number;
+    open: number;
     high: number;
     low: number;
     close: number;
-    date: Date;
     volume: number;
+    date: Date;
 }
 
 export const CurrencyModel = new Model(modelName);
@@ -37,10 +37,12 @@ export const findCurrencyOrCreateIt = async () => {
         asset: 3300000,
         value: 3,
         symbol: instrument,
+
         change: 0,
         changePct: 0,
         high: 3,
         low: 0,
+        open: 3,
         close: 3,
         volume: 0,
         date: new Date(),
