@@ -61,7 +61,7 @@ export const findCurrencyOrCreateIt = async () => {
         /**
          * Try and find currency document
          */
-        const result: {content: Currency; cas: any} = await collection.get('currency');
+        const result: {content: Currency; cas: any} = await collection.get(instrument);
         log('currency', result && result.content);
     } catch (e) {
         const message = e && e.message;

@@ -8,6 +8,7 @@ import {OrderBook} from './OrderBook/OrderBook';
 import {Action, OrderType} from './shared';
 import {startCouchbaseAndNext} from './sofa/couchbase';
 import {log} from './log';
+import {clients} from './clients';
 
 const instrument = _get(process.env, 'INSTRUMENT', 'STQ');
 
@@ -33,6 +34,7 @@ async function main() {
     log(chalk.green(`✅ started the ${instrument} Orderbook`));
 
     // Add clients from here
+    await clients();
 
     // Remove locks
     // Re-activate locked before shutdown (using workedOn: Date on field)
@@ -49,8 +51,7 @@ async function main() {
  * @param orderReq
  */
 export const order = async (ob: OrderBook, orderReq: Order) => {
-    const {options} = orderReq;
-    const order = new Order(orderReq, options);
+    const order = new Order(orderReq);
     const added = await ob.add(order);
 
     if (!added) {
