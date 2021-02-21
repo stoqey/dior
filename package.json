@@ -91,6 +91,7 @@
     "@stoqey/sofa": "^0.1.9",
     "@types/chalk": "^2.2.0",
     "chalk": "^4.1.0",
+    "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "lodash": "^4.17.20",
     "moment": "^2.29.1",
