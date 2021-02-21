@@ -1,6 +1,13 @@
 import EventEmitter from 'events';
 
 export enum APPEVENTS {
+    // Emitters
+
+    ADD = 'add',
+    CANCEL = 'cancel',
+    UPDATE = 'update',
+    GET = 'get',
+
     // Order in
     ADD_ORDER = 'add_order',
 

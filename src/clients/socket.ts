@@ -2,6 +2,13 @@
 import nanoexpress from 'nanoexpress';
 import {APPEVENTS, AppEvents} from '../events';
 import {JSONDATA} from '../utils';
+import {log} from '../log';
+import {isEmpty} from 'lodash';
+
+interface Imessage {
+    type: 'get' | 'add' | 'update' | 'cancel';
+    data: any;
+}
 
 export const runWebsocket = (app: nanoexpress.nanoexpressApp) => {
     const events = AppEvents.Instance;
@@ -45,6 +52,29 @@ export const runWebsocket = (app: nanoexpress.nanoexpressApp) => {
             events.on(APPEVENTS.COMPLETE_ORDER, handleCompleteOrder);
 
             ws.on('message', (msg) => {
+                try {
+                    const data: Imessage = JSONDATA(msg) as any;
+                    const typ: any = data && data.type;
+                    const dataReceived: any = data && data.data;
+
+                    if (!isEmpty(typ)) {
+                        if (typ === APPEVENTS.ADD) {
+                            events.emit(APPEVENTS.ADD, dataReceived);
+                        }
+
+                        if (typ === APPEVENTS.UPDATE) {
+                            events.emit(APPEVENTS.UPDATE, dataReceived);
+                        }
+
+                        if (typ === APPEVENTS.CANCEL) {
+                            events.emit(APPEVENTS.CANCEL, dataReceived);
+                        }
+                        // check data types from here
+                    }
+                } catch (error) {
+                    log('error receiving message from client');
+                    console.error(error);
+                }
                 // Client messages
                 // Add order
                 // Cancel order
