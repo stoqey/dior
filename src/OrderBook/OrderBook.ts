@@ -433,6 +433,9 @@ export class OrderBook {
 
                 trade = newTrade;
 
+                // Enter trade
+                // Record order before deleting
+                // update currency object
                 // TODO after entered into tradeBook
                 // await this.tradeBook.enter(newTrade);
 
