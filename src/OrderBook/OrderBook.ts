@@ -287,26 +287,28 @@ export class OrderBook {
             matchOrder = await this.matchOrder(order, this.bids);
         }
 
-        let addToBooks = !isEmpty(matchOrder.trade) ? true : false;
+        const addToBooks = !isEmpty(matchOrder.trade) ? true : false;
 
-        if (!order.isFilled()) {
-            if (order.params.includes(OrderParams.IOC)) {
-                await order.cancel(); // cancel the rest of the order
-                addToBooks = false; // don't add the order to the books (keep it stored but not active)
-                return;
-            }
+        // const { matched , trade }  = matchOrder;
 
-            if (!addToBooks) {
-                await this.addToBook(order, true); // store the order (in the books) and order is still active
-                return true;
-            }
-        }
+        // if (!matched.isFilled()) {
+        //     if (order.params.includes(OrderParams.IOC)) {
+        //         await order.cancel(); // cancel the rest of the order
+        //         addToBooks = false; // don't add the order to the books (keep it stored but not active)
+        //         return;
+        //     }
 
-        if (order.isFilled() && addToBooks) {
-            await this.addToBook(order, false); // store the order (in the books), but not active
-        }
+        //     if (!addToBooks) {
+        //         await this.addToBook(order, true); // store the order (in the books) and order is still active
+        //         return true;
+        //     }
+        // }
 
-        return true;
+        // if (order.isFilled() && addToBooks) {
+        //     await this.addToBook(order, false); // store the order (in the books), but not active
+        // }
+
+        return addToBooks;
     }
 
     min = (q1: number, q2: number): number => {
@@ -499,6 +501,11 @@ export class OrderBook {
             await order.save();
             // refresh
             await this.refresh();
+        }
+
+        // If not matched save it still
+        if (!matched) {
+            await order.save();
         }
 
         await this.refresh();
