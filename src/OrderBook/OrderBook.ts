@@ -110,12 +110,37 @@ export class OrderBook {
      */
     public getMarketPrice() {}
 
+    //   /**
+    //  * setMarketPrice
+    //  * @param price number
+    //  */
+    // public setMarketPrice(price: number): Promise<void> {
+    //     this.marketPrice = price;
+    //     const thisCurrency: Currency = await CurrencyModel.findById(this.instrument);
+    //     if (!isEmpty(thisCurrency)) {
+    //         this.setMarketPrice(thisCurrency.close);
+    //     }
+    // }
+
     /**
      * setMarketPrice
      * @param price number
      */
-    public async saveMarketPrice(price: number): Promise<void> {
-        this.marketPrice = price;
+    public async saveMarketPrice(price?: number): Promise<any> {
+        const thisCurrency: Currency = await CurrencyModel.findById(this.instrument);
+
+        // Change price
+        if (price) {
+            // TODO calculate change
+            // TODO Record high and low
+            // save it to db
+            this.marketPrice = price;
+            thisCurrency.close = price;
+            return await CurrencyModel.save(thisCurrency);
+        }
+
+        // Set it to this local
+        this.marketPrice = thisCurrency.close;
     }
 
     /**
