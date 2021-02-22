@@ -10,7 +10,7 @@ import {Currency, CurrencyModel} from '../sofa/Currency';
 import {sortBuyOrders, sortSellOrders} from '../utils/orders';
 import {APPEVENTS, AppEvents} from '../events';
 import {log} from '../log';
-import {JSONDATA} from '../utils';
+import {generateUUID, JSONDATA} from '../utils';
 
 const minQty = 1;
 
@@ -145,7 +145,7 @@ export class OrderBook {
      * @param price number
      */
     public async saveOrderRecord(order: Order): Promise<any> {
-        return await OrderRecordModal.create(order);
+        return await OrderRecordModal.create(order.json());
     }
 
     /**
@@ -450,8 +450,7 @@ export class OrderBook {
                 oppositeOrder.filledQty += qty;
 
                 const newTrade = new Trade({
-                    // TODO generate tradeId
-                    id: null,
+                    id: generateUUID(),
                     buyer,
                     seller,
                     instrument: order.instrument,
