@@ -1,4 +1,6 @@
 import includes from 'lodash/includes';
+import identity from 'lodash/identity';
+import pickBy from 'lodash/pickBy';
 import isEmpty from 'lodash/isEmpty';
 import {Order, OrderParams, OrderTracker} from '../Order';
 import {TradeBook} from '../TradeBook';
@@ -8,6 +10,7 @@ import {Currency, CurrencyModel} from '../sofa/Currency';
 import {sortBuyOrders, sortSellOrders} from '../utils/orders';
 import {APPEVENTS, AppEvents} from '../events';
 import {log} from '../log';
+import {JSONDATA} from '../utils';
 
 const minQty = 1;
 
@@ -21,10 +24,9 @@ export class OrderBook {
     marketPrice: number;
     tradeBook: TradeBook;
     orderModal: typeof OrderModal;
-    activeOrders: Order[];
-    bids: Order[];
-    asks: Order[];
-    orderTrackers: OrderTracker[];
+    activeOrders: Order[] = [];
+    bids: Order[] = [];
+    asks: Order[] = [];
     static _instance: OrderBook;
 
     /**
@@ -44,17 +46,13 @@ export class OrderBook {
     /**
      * bindEventsToOrderBook
      */
-    public bindEventsToOrderBook() {
+    public bindEventsToOrderBook = () => {
         const events = AppEvents.Instance;
 
         events.on(APPEVENTS.ADD, async (order: Order) => {
-            const newOrder: Order = new Order({
-                ...order,
-                date: new Date(),
-            });
-
             // submit this new order
-            await this.add(newOrder);
+            const jsonData = JSONDATA(order);
+            await this.add(jsonData as Order);
         });
 
         events.on(APPEVENTS.CANCEL, async (orderId: string) => {
@@ -71,7 +69,7 @@ export class OrderBook {
         //     // submit this new order
         //     this.add(newOrder);
         // });
-    }
+    };
 
     /**
      * start
@@ -85,13 +83,7 @@ export class OrderBook {
             }
 
             // Set active, bids, and asks
-            const allOrders: Order[] = await getAllOrders(); // all orders, not trackers
-            if (!isEmpty(allOrders)) {
-                this.activeOrders = allOrders.filter((i) => i.workedOn !== null); // all orders with locks
-                this.bids = allOrders.filter((i) => i.action === 'BUY').sort(sortBuyOrders);
-                this.asks = allOrders.filter((i) => i.action === 'SELL').sort(sortSellOrders);
-            }
-
+            await this.refresh();
             // Order modal and tradesModal
             this.orderModal = OrderModal;
 
@@ -156,7 +148,7 @@ export class OrderBook {
             await this.setActiveOrder(order);
         }
 
-        return await this.orderModal.save(order);
+        return await this.orderModal.save(order.json());
     }
 
     /**
@@ -172,42 +164,19 @@ export class OrderBook {
         // Get all trades
         // Sort buys
         // Sort sells
-    }
 
-    /**
-     * removeFromBooks
-     * @param id string
-     */
-    public async removeFromBooks(id: string) {
-        const tracker = this.orderTrackers.find((i) => i.orderId === id);
-        if (!isEmpty(tracker)) {
-            throw new Error(`Tracker not found`);
+        // Set active, bids, and asks
+        const allOrders: Order[] = await getAllOrders(); // all orders, not trackers
+        log(`✅: allOrders:Orders ${allOrders && allOrders.length}`);
+        if (!isEmpty(allOrders)) {
+            this.activeOrders = allOrders.filter((i) => i.workedOn !== null); // all orders with locks
+            this.bids = allOrders.filter((i) => i.action === 'BUY').sort(sortBuyOrders);
+            this.asks = allOrders.filter((i) => i.action === 'SELL').sort(sortSellOrders);
         }
 
-        const order = this.getActiveOrder(id);
-        if (!isEmpty(order)) {
-            throw new Error(`Active order not found`);
-        }
-
-        const savedOrder = await this.orderModal.save(order);
-        if (isEmpty(savedOrder)) {
-            console.error(new Error(`Error saving active order`));
-        }
-
-        // TODO remove from database
-        let oMap: Order[] = [];
-        if (tracker.action === 'BUY') {
-            oMap = this.bids;
-            oMap = oMap.filter((i) => i.id !== tracker.orderId); // remove from books
-            this.bids = oMap;
-        } else {
-            oMap = this.asks;
-            oMap = oMap.filter((i) => i.id !== tracker.orderId); // remove from books
-            this.asks = oMap;
-        }
-
-        const newActiveOrders = this.activeOrders.filter((i) => i.id !== tracker.orderId); // remove an active order
-        this.activeOrders = newActiveOrders;
+        log(`✅: Active:Orders ${this.activeOrders && this.activeOrders.length}`);
+        log(`✅: Bids:Orders ${this.bids && this.bids.length}`);
+        log(`✅: Asks:Orders ${this.asks && this.asks.length}`);
     }
 
     /**
@@ -226,9 +195,16 @@ export class OrderBook {
 
     /**
      * add
-     * @param order Order
+     * @param currentOrder Order
      */
-    public async add(order: Order): Promise<boolean> {
+    public async add(currentOrder: Order): Promise<boolean> {
+        console.log('current order', JSON.stringify(currentOrder));
+        const order: Order = new Order({
+            ...currentOrder,
+            date: new Date(),
+        });
+
+        console.log(order);
         if (order.qty <= minQty) {
             console.error(ErrInvalidQty);
             // check the qty
@@ -311,6 +287,8 @@ export class OrderBook {
         order: Order,
         offers: Order[]
     ): Promise<{matched: Order; trade: Trade}> {
+        log(`Match this order ${JSON.stringify(order)}`);
+        log(`Offers of this order are ${offers && offers.length}`);
         // TODO refresh orders, then loop thru all of them
         let matched: Order;
         let trade: Trade;
@@ -342,114 +320,120 @@ export class OrderBook {
         // }()
         // currentAON := order.Params.Is(ParamAON)
 
-        for (const offer of offers) {
-            const oppositeOrder = offer;
+        if (!isEmpty(offers)) {
+            for (const offer of offers) {
+                const oppositeOrder = offer;
 
-            const oppositeAON = oppositeOrder.params;
-            if (await oppositeOrder.isCancelled()) {
-                await oppositeOrder.cancel(); // mark order for removal
-                continue; // don't match with this order
-            }
+                const oppositeAON = oppositeOrder.params;
+                if (await oppositeOrder.isCancelled()) {
+                    await oppositeOrder.cancel(); // mark order for removal
+                    continue; // don't match with this order
+                }
 
-            const qty = this.min(order.unfilledQty(), oppositeOrder.unfilledQty());
+                const qty = this.min(order.unfilledQty(), oppositeOrder.unfilledQty());
 
-            // TODO Check AON
-            if (currentAON && qty != order.unfilledQty()) {
-                continue; // couldn't find a match - we require AON but couldn't fill the order in one trade
-            }
-            if (oppositeAON && qty != oppositeOrder.unfilledQty()) {
-                continue; // couldn't find a match - other offer requires AON but our order can't fill it completely
-            }
+                // TODO Check AON
+                if (currentAON && qty != order.unfilledQty()) {
+                    continue; // couldn't find a match - we require AON but couldn't fill the order in one trade
+                }
+                if (oppositeAON && qty != oppositeOrder.unfilledQty()) {
+                    continue; // couldn't find a match - other offer requires AON but our order can't fill it completely
+                }
 
-            let price = 0;
+                let price = 0;
 
-            /**
-             * Case orderType
-             */
-            if (!oppositeOrder.type) {
-                this.panicOnOrderType(oppositeOrder);
-            }
+                /**
+                 * Case orderType
+                 */
+                if (!oppositeOrder.type) {
+                    this.panicOnOrderType(oppositeOrder);
+                }
 
-            if (oppositeOrder.type === 'market') {
-                continue; // two opposing market orders are usually forbidden (rejected) - continue matching
-            }
+                if (oppositeOrder.type === 'market') {
+                    continue; // two opposing market orders are usually forbidden (rejected) - continue matching
+                }
 
-            if (oppositeOrder.type === 'limit') {
-                price = oppositeOrder.price; // crossing the spread
-            }
-
-            /**
-             * Case typeLimit
-             */
-
-            const myPrice = order.price;
-
-            if (buying) {
                 if (oppositeOrder.type === 'limit') {
-                    if (myPrice < oppositeOrder.price) {
-                        matched = oppositeOrder; // other prices are going to be even higher than our limit
-                        break;
+                    price = oppositeOrder.price; // crossing the spread
+                }
+
+                /**
+                 * Case typeLimit
+                 */
+
+                const myPrice = order.price;
+
+                if (buying) {
+                    if (oppositeOrder.type === 'limit') {
+                        if (myPrice < oppositeOrder.price) {
+                            matched = oppositeOrder; // other prices are going to be even higher than our limit
+                            break;
+                        } else {
+                            // our bid is higher or equal to their ask - set price to myPrice
+                            price = myPrice; // e.g. our bid is $20.10, their ask is $20 - trade executes at $20.10
+                        }
                     } else {
-                        // our bid is higher or equal to their ask - set price to myPrice
-                        price = myPrice; // e.g. our bid is $20.10, their ask is $20 - trade executes at $20.10
+                        // we have a limit, they are selling at our price
+                        price = myPrice;
                     }
                 } else {
-                    // we have a limit, they are selling at our price
-                    price = myPrice;
-                }
-            } else {
-                // we're selling
-                if (oppositeOrder.type === 'limit') {
-                    if (myPrice > oppositeOrder.price) {
-                        // we can't match since our ask is higher than the best bid
-                        break;
+                    // we're selling
+                    if (oppositeOrder.type === 'limit') {
+                        if (myPrice > oppositeOrder.price) {
+                            // we can't match since our ask is higher than the best bid
+                            break;
+                        } else {
+                            price = oppositeOrder.price; // set price to their bid
+                        }
                     } else {
-                        price = oppositeOrder.price; // set price to their bid
+                        price = myPrice;
                     }
+                }
+
+                if (buying) {
+                    seller = oppositeOrder.clientId;
+                    askOrderId = oppositeOrder.id;
                 } else {
-                    price = myPrice;
+                    buyer = oppositeOrder.clientId;
+                    bidOrderId = oppositeOrder.id;
+                }
+
+                order.filledQty += qty;
+                oppositeOrder.filledQty += qty;
+
+                const newTrade = new Trade({
+                    // TODO generate tradeId
+                    id: null,
+                    buyer,
+                    seller,
+                    instrument: order.instrument,
+                    qty,
+                    price,
+                    date: new Date(),
+                    bidOrderId: bidOrderId,
+                    askOrderId: askOrderId,
+                });
+
+                trade = newTrade;
+
+                // TODO after entered into tradeBook
+                // await this.tradeBook.enter(newTrade);
+
+                await this.setMarketPrice(price);
+
+                matched = oppositeOrder;
+
+                if (oppositeOrder.unfilledQty() === 0) {
+                    // if the other order is filled completely - remove it from the order book
+                    await removeOrders(oppositeOrder);
+                } else {
+                    await this.updateActiveOrder(oppositeOrder);
                 }
             }
-
-            if (buying) {
-                seller = oppositeOrder.clientId;
-                askOrderId = oppositeOrder.id;
-            } else {
-                buyer = oppositeOrder.clientId;
-                bidOrderId = oppositeOrder.id;
-            }
-
-            order.filledQty += qty;
-            oppositeOrder.filledQty += qty;
-
-            const newTrade = new Trade({
-                // TODO generate tradeId
-                id: null,
-                buyer,
-                seller,
-                instrument: order.instrument,
-                qty,
-                price,
-                date: new Date(),
-                bidOrderId: bidOrderId,
-                askOrderId: askOrderId,
-            });
-
-            trade = newTrade;
-
-            // TODO after entered into tradeBook
-            // await this.tradeBook.enter(newTrade);
-
-            await this.setMarketPrice(price);
-
-            matched = oppositeOrder;
-
-            if (oppositeOrder.unfilledQty() === 0) {
-                // if the other order is filled completely - remove it from the order book
-                await removeOrders(oppositeOrder);
-            } else {
-                await this.updateActiveOrder(oppositeOrder);
-            }
+        } else {
+            await this.orderModal.create(order.json());
+            // refresh
+            await this.refresh();
         }
 
         // If order has been filled
@@ -457,6 +441,7 @@ export class OrderBook {
             await removeOrders(order);
         }
 
+        await this.refresh();
         return {matched, trade};
     }
 

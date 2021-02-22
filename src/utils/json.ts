@@ -1,6 +1,6 @@
 import isEmpty from 'lodash/isEmpty';
 
-export const JSONDATA = (data: Record<string, any> | string): Record<string, any> | null => {
+export const JSONDATA = <T>(data: Record<string, any> | string): T | Record<string, any> | null => {
     if (isEmpty(data) || !data) {
         return null;
     }

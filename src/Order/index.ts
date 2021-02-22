@@ -22,7 +22,7 @@ export enum OrderParams {
 
 export interface OrderOptions {
     stop: boolean; // stop order (has to have stop price set)
-    params: OrderParams[]; // = ParamIOC | ParamAON // IOC + AON - immediately try to fill the whole order
+    params?: OrderParams[]; // = ParamIOC | ParamAON // IOC + AON - immediately try to fill the whole order
     gtc: boolean; // good-till-cancelled -  keep order active until manually cancelled
     gfd: boolean; // good-for-day keep order active until the end of the trading day
     gtd: boolean; // good-till-date - keep order active until the provided date (including the date)
@@ -47,7 +47,7 @@ export class Order implements OrderObject {
     modal: Model;
 
     stop = false;
-    params: OrderParams[];
+    params?: OrderParams[];
     gtc: boolean;
     gfd: boolean;
     gtd: boolean;
@@ -106,6 +106,51 @@ export class Order implements OrderObject {
         this.stopPrice = stopPrice;
         this.canceled = canceled;
         this.date = date;
+    }
+
+    /**
+     * json
+     */
+    public json(): Order {
+        const {
+            action,
+            id,
+            instrument,
+            clientId,
+            type,
+            qty,
+            filledQty,
+            price,
+            stopPrice,
+            canceled,
+            date,
+            stop,
+            params,
+            gtc,
+            gfd,
+            gtd,
+            workedOn,
+        } = this;
+
+        return {
+            action,
+            id,
+            instrument,
+            clientId,
+            type,
+            qty,
+            filledQty,
+            price,
+            stopPrice,
+            canceled,
+            date,
+            stop,
+            params,
+            gtc,
+            gfd,
+            gtd,
+            workedOn,
+        } as any;
     }
 
     /**

@@ -10,9 +10,10 @@ const instrument = "STQ";
 const clientId = 'stqnetwork';
 
 
+// @ts-ignore
 const orderReq: Order = {
     stop: false,
-    params: [""],
+    params: [],
     gtc:  true,
     gfd: false,
     gtd: false,
