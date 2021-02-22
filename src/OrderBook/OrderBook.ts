@@ -62,15 +62,15 @@ export class OrderBook {
             await this.cancelOrder(orderId);
         });
 
-        events.on(APPEVENTS.UPDATE, (order: Order) => {
-            const newOrder: Order = new Order({
-                ...order,
-                date: new Date(),
-            });
+        // events.on(APPEVENTS.UPDATE, (order: Order) => {
+        //     const newOrder: Order = new Order({
+        //         ...order,
+        //         date: new Date(),
+        //     });
 
-            // submit this new order
-            this.add(newOrder);
-        });
+        //     // submit this new order
+        //     this.add(newOrder);
+        // });
     }
 
     /**
@@ -94,6 +94,8 @@ export class OrderBook {
 
             // Order modal and tradesModal
             this.orderModal = OrderModal;
+
+            this.bindEventsToOrderBook(); // bind orderbook events
         } catch (error) {
             console.error(error);
             throw error;
