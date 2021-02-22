@@ -5,7 +5,7 @@ import isEmpty from 'lodash/isEmpty';
 import {Order, OrderParams, OrderTracker} from '../Order';
 import {TradeBook} from '../TradeBook';
 import {Trade} from '../Trade';
-import {getAllOrders, OrderModal} from '../Order/Order.modal';
+import {getAllOrders, OrderModal, OrderRecordModal} from '../Order/Order.modal';
 import {Currency, CurrencyModel} from '../sofa/Currency';
 import {sortBuyOrders, sortSellOrders} from '../utils/orders';
 import {APPEVENTS, AppEvents} from '../events';
@@ -76,6 +76,7 @@ export class OrderBook {
      */
     public async start(instrument: string) {
         try {
+            this.instrument = instrument;
             // Set MarketPrice
             const thisCurrency: Currency = await CurrencyModel.findById(instrument);
             if (!isEmpty(thisCurrency)) {
@@ -113,8 +114,16 @@ export class OrderBook {
      * setMarketPrice
      * @param price number
      */
-    public setMarketPrice(price: number): void {
+    public async saveMarketPrice(price: number): Promise<void> {
         this.marketPrice = price;
+    }
+
+    /**
+     * SaveOrderRecord
+     * @param price number
+     */
+    public async saveOrderRecord(order: Order): Promise<any> {
+        return OrderRecordModal.create(order);
     }
 
     /**
@@ -434,10 +443,11 @@ export class OrderBook {
                 trade = newTrade;
 
                 // Enter trade
+                await this.tradeBook.enter(newTrade);
                 // Record order before deleting
+
                 // update currency object
                 // TODO after entered into tradeBook
-                // await this.tradeBook.enter(newTrade);
 
                 await this.setMarketPrice(price);
                 log(`✅✅✅: Set market price ${price}`);
