@@ -148,7 +148,7 @@ export class OrderBook {
             await this.setActiveOrder(order);
         }
 
-        return await this.orderModal.save(order.json());
+        return await order.save();
     }
 
     /**
@@ -431,7 +431,7 @@ export class OrderBook {
                 }
             }
         } else {
-            await this.orderModal.create(order.json());
+            await order.save();
             // refresh
             await this.refresh();
         }

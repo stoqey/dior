@@ -29,6 +29,25 @@ const orderReq: Order = {
     canceled: false,
 };
 
+// @ts-ignore
+const orderReqAsk: Order = {
+    stop: false,
+    params: [],
+    gtc:  true,
+    gfd: false,
+    gtd: false,
+    action: "SELL",
+    id: generateUUID(),
+    instrument,
+    clientId,
+    type: "limit",
+    qty: 30,
+    filledQty: 0,
+    price: 3.10,
+    stopPrice: 3.10,
+    canceled: false,
+};
+
 describe(`Broker ${appName}`, () => {
     it('should add order into order book', function (done) {
         request.post('/add').send(orderReq).set('Accept', 'application/json').expect(200, done);
