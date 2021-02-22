@@ -6,6 +6,7 @@ import {Trade} from '../Trade';
 import {getAllOrders, OrderModal} from '../Order/Order.modal';
 import {Currency, CurrencyModel} from '../sofa/Currency';
 import {sortBuyOrders, sortSellOrders} from '../utils/orders';
+import {APPEVENTS, AppEvents} from '../events';
 
 const minQty = 1;
 
@@ -38,6 +39,43 @@ export class OrderBook {
     // Set marketPrice
     // Get all orders
     // Set bids, active and set orders
+
+    /**
+     * bindEventsToOrderBook
+     */
+    public bindEventsToOrderBook() {
+        const events = AppEvents.Instance;
+
+        events.on(APPEVENTS.ADD, (order: Order) => {
+            const newOrder: Order = new Order({
+                ...order,
+                date: new Date(),
+            });
+
+            // submit this new order
+            this.add(newOrder);
+        });
+
+        events.on(APPEVENTS.CANCEL, (orderId: string) => {
+            const newOrder: Order = new Order({
+                ...order,
+                date: new Date(),
+            });
+
+            // submit this new order
+            this.add(newOrder);
+        });
+
+        events.on(APPEVENTS.UPDATE, (order: Order) => {
+            const newOrder: Order = new Order({
+                ...order,
+                date: new Date(),
+            });
+
+            // submit this new order
+            this.add(newOrder);
+        });
+    }
 
     /**
      * start
@@ -172,6 +210,20 @@ export class OrderBook {
 
         const newActiveOrders = this.activeOrders.filter((i) => i.id !== tracker.orderId); // remove an active order
         this.activeOrders = newActiveOrders;
+    }
+
+    /**
+     * async cancelOrder
+     * orderId: String     */
+    public async cancelOrder(orderId: string): Promise<any> {
+        try {
+            // Find order by
+            // populate order then
+            // remove order
+        } catch (error) {
+            console.error(error);
+            log('error canceling order');
+        }
     }
 
     /**
