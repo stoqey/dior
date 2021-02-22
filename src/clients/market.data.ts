@@ -25,7 +25,8 @@ export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
 
     // @ts-ignore
     app.get('/quote', async function (req, res) {
-        const instrument = req.query.symbol || req.params.symbol || 'STQ';
+        const instrument =
+            (req.query && req.query.symbol) || (req.params && req.params.symbol) || 'STQ';
         // Get latest data
         // Get top use as quote
         try {

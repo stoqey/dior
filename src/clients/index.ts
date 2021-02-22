@@ -1,8 +1,8 @@
-import nanoexpress from 'nanoexpress';
+import nanoexpress, {nanoexpressApp} from 'nanoexpress';
 import cors from 'cors';
 
 import {log} from '../log';
-import {PORT, appName} from '../config';
+import {PORT, appName, HOSTNAME} from '../config';
 import {brokerClient} from './broker.client';
 import {marketDataClient} from './market.data';
 import {socketClient} from './socket';
@@ -23,6 +23,18 @@ export async function clients(): Promise<boolean> {
         app.use(cors(corsOptions));
 
         log(`starting ${appName} on ${PORT}`);
+
+        // Healthcheck
+        app.get(
+            '/',
+            (req, res): nanoexpressApp => {
+                res.json({
+                    HOSTNAME,
+                    time: new Date(),
+                });
+                return;
+            }
+        );
 
         // Add broker client
         brokerClient(app);
