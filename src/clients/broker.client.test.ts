@@ -49,8 +49,12 @@ const orderReqAsk: Order = {
 };
 
 describe(`Broker ${appName}`, () => {
+    // it('should add order into order book', function (done) {
+    //     request.post('/add').send(orderReq).set('Accept', 'application/json').expect(200, done);
+    // });
+
     it('should add order into order book', function (done) {
-        request.post('/add').send(orderReq).set('Accept', 'application/json').expect(200, done);
+        request.post('/add').send(orderReqAsk).set('Accept', 'application/json').expect(200, done);
     });
 
     // it('should not insert empty array market data', function (done) {

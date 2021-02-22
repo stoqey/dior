@@ -91,7 +91,7 @@
   "dependencies": {
     "@sentry/node": "^6.2.0",
     "@stoqey/client-graphql": "^0.1.7",
-    "@stoqey/sofa": "^0.1.9",
+    "@stoqey/sofa": "^0.1.10",
     "@types/chalk": "^2.2.0",
     "chalk": "^4.1.0",
     "cors": "^2.8.5",

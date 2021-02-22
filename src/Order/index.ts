@@ -230,7 +230,7 @@ export class Order implements OrderObject {
     public async save(): Promise<Order> {
         try {
             // save the order
-            const saved = await this.modal.getCollection().upsert(this.json().id, this.json());
+            const saved = await this.modal.create(this.json());
             if (!saved) {
                 throw new Error('error saving the order');
             }

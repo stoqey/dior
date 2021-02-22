@@ -166,7 +166,14 @@ export class OrderBook {
         // Sort sells
 
         // Set active, bids, and asks
-        const allOrders: Order[] = await getAllOrders(); // all orders, not trackers
+        let allOrders: Order[] = await getAllOrders(); // all orders, not trackers
+        allOrders = allOrders.map(
+            (o) =>
+                new Order({
+                    ...o,
+                })
+        );
+
         log(`✅: allOrders:Orders ${allOrders && allOrders.length}`);
         if (!isEmpty(allOrders)) {
             this.activeOrders = allOrders.filter((i) => i.workedOn !== null); // all orders with locks
@@ -326,6 +333,7 @@ export class OrderBook {
 
                 const oppositeAON = oppositeOrder.params;
                 if (await oppositeOrder.isCancelled()) {
+                    log(`❌: Canceled for isCancelled`);
                     await oppositeOrder.cancel(); // mark order for removal
                     continue; // don't match with this order
                 }
@@ -334,9 +342,15 @@ export class OrderBook {
 
                 // TODO Check AON
                 if (currentAON && qty != order.unfilledQty()) {
+                    log(
+                        `❌: couldn't find a match - we require AON but couldn't fill the order in one trade ${oppositeOrder.id}`
+                    );
                     continue; // couldn't find a match - we require AON but couldn't fill the order in one trade
                 }
                 if (oppositeAON && qty != oppositeOrder.unfilledQty()) {
+                    log(
+                        `❌: couldn't find a match - other offer requires AON but our order can't fill it completely ${oppositeOrder.id}`
+                    );
                     continue; // couldn't find a match - other offer requires AON but our order can't fill it completely
                 }
 
@@ -350,6 +364,9 @@ export class OrderBook {
                 }
 
                 if (oppositeOrder.type === 'market') {
+                    log(
+                        `❌: two opposing market orders are usually forbidden (rejected) - continue matching ${oppositeOrder.id}`
+                    );
                     continue; // two opposing market orders are usually forbidden (rejected) - continue matching
                 }
 
@@ -420,14 +437,21 @@ export class OrderBook {
                 // await this.tradeBook.enter(newTrade);
 
                 await this.setMarketPrice(price);
+                log(`✅✅✅: Set market price ${price}`);
 
                 matched = oppositeOrder;
+
+                log(`💩💩💩💩: MatchedOrderId=${matched.id} order${order.id}`);
 
                 if (oppositeOrder.unfilledQty() === 0) {
                     // if the other order is filled completely - remove it from the order book
                     await removeOrders(oppositeOrder);
+                    log(`⟁⟁⟁: Removed oppositeOrder=${oppositeOrder.id} order${order.id}`);
                 } else {
                     await this.updateActiveOrder(oppositeOrder);
+                    log(
+                        `⟁⟁⟁: UpdateActiveOrder oppositeOrder=${oppositeOrder.id} order${order.id}`
+                    );
                 }
             }
         } else {
