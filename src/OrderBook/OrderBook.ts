@@ -76,17 +76,13 @@ export class OrderBook {
      */
     public async start(instrument: string) {
         try {
-            this.instrument = instrument;
-            // Set MarketPrice
-            const thisCurrency: Currency = await CurrencyModel.findById(instrument);
-            if (!isEmpty(thisCurrency)) {
-                this.setMarketPrice(thisCurrency.close);
-            }
-
-            // Set active, bids, and asks
-            await this.refresh();
             // Order modal and tradesModal
             this.orderModal = OrderModal;
+            this.instrument = instrument;
+            // Set MarketPrice
+            await this.saveMarketPrice();
+            // Set active, bids, and asks
+            await this.refresh();
 
             this.bindEventsToOrderBook(); // bind orderbook events
         } catch (error) {
@@ -148,7 +144,7 @@ export class OrderBook {
      * @param price number
      */
     public async saveOrderRecord(order: Order): Promise<any> {
-        return OrderRecordModal.create(order);
+        return await OrderRecordModal.create(order);
     }
 
     /**
@@ -469,12 +465,9 @@ export class OrderBook {
 
                 // Enter trade
                 await this.tradeBook.enter(newTrade);
-                // Record order before deleting
 
                 // update currency object
-                // TODO after entered into tradeBook
-
-                await this.setMarketPrice(price);
+                await this.saveMarketPrice(price);
                 log(`✅✅✅: Set market price ${price}`);
 
                 matched = oppositeOrder;
@@ -484,6 +477,8 @@ export class OrderBook {
                 // Add to orderbook, or create trade
 
                 if (oppositeOrder.unfilledQty() === 0) {
+                    // Record order before deleting
+                    await this.saveOrderRecord(oppositeOrder);
                     // if the other order is filled completely - remove it from the order book
                     await removeOrders(oppositeOrder);
                     log(`⟁⟁⟁: Removed oppositeOrder=${oppositeOrder.id} order${order.id}`);
@@ -493,16 +488,17 @@ export class OrderBook {
                         `⟁⟁⟁: UpdateActiveOrder oppositeOrder=${oppositeOrder.id} order${order.id}`
                     );
                 }
+
+                // If order has been filled
+                if (order.isFilled()) {
+                    await this.saveOrderRecord(order);
+                    await removeOrders(order);
+                }
             }
         } else {
             await order.save();
             // refresh
             await this.refresh();
-        }
-
-        // If order has been filled
-        if (order.isFilled()) {
-            await removeOrders(order);
         }
 
         await this.refresh();
