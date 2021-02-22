@@ -3,6 +3,9 @@ import cors from 'cors';
 
 import {log} from '../log';
 import {PORT, appName} from '../config';
+import {brokerClient} from './broker.client';
+import {marketDataClient} from './market.data';
+import {socketClient} from './socket';
 
 // BrokerClient
 // MarketData Client
@@ -22,10 +25,12 @@ export async function clients(): Promise<boolean> {
         log(`starting ${appName} on ${PORT}`);
 
         // Add broker client
+        brokerClient(app);
         // Add market data client
+        marketDataClient(app);
         // Add sockets data client
+        socketClient(app);
         // App add web sockets
-        // runWebsocket(app, nrp);
 
         // App listen
         await app.listen(PORT);

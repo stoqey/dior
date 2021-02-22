@@ -7,7 +7,7 @@ import {log} from '../log';
 import {Currency, CurrencyModel} from '../sofa/Currency';
 import {APPEVENTS, AppEvents} from '../events';
 
-export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
+export const brokerClient = (app: nanoexpressApp): nanoexpressApp => {
     const events = AppEvents.Instance;
 
     // @ts-ignore

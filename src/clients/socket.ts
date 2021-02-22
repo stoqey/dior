@@ -11,7 +11,7 @@ interface Imessage {
     data: any;
 }
 
-export const runWebsocket = (app: nanoexpress.nanoexpressApp) => {
+export const socketClient = (app: nanoexpress.nanoexpressApp) => {
     const events = AppEvents.Instance;
     // events.on(APPEVENTS.ADD_ORDER, function (data: any) {
     //     console.log(TOPICS.STQ_quote, data);

@@ -1,19 +1,36 @@
-
 import 'dotenv/config';
 import 'mocha';
 import supertest from 'supertest';
-import { appName, PORT } from '../config';
+import { Order } from '../Order'
+import {appName, PORT} from '../config';
+import { generateUUID } from '../utils';
 
 const request = supertest(`http://localhost:${PORT}`);
+const instrument = "STQ";
+const clientId = 'stqnetwork';
 
-describe(`Server ${appName}`, () => {
 
+const orderReq: Order = {
+    stop: false,
+    params: [""],
+    gtc:  true,
+    gfd: false,
+    gtd: false,
+    action: "BUY",
+    id: generateUUID(),
+    instrument,
+    clientId,
+    type: "limit",
+    qty: 30,
+    filledQty: 0,
+    price: 3.30,
+    stopPrice: 3.20,
+    canceled: false,
+};
 
-    it('should insert array market data', function (done) {
-        request.post('/v1/insert')
-            .send(arr)
-            .set('Accept', 'application/json')
-            .expect(200, done);
+describe(`Broker ${appName}`, () => {
+    it('should add order into order book', function (done) {
+        request.post('/add').send(orderReq).set('Accept', 'application/json').expect(200, done);
     });
 
     // it('should not insert empty array market data', function (done) {
@@ -69,5 +86,4 @@ describe(`Server ${appName}`, () => {
     //         .expect('Content-Type', /json/)
     //         .expect(200, done);
     // });
-
 });
