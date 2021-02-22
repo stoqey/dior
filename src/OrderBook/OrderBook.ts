@@ -76,6 +76,7 @@ export class OrderBook {
      */
     public async start(instrument: string) {
         try {
+            this.tradeBook = new TradeBook();
             // Order modal and tradesModal
             this.orderModal = OrderModal;
             this.instrument = instrument;
