@@ -10,28 +10,29 @@
 
 
 ## Tech
-- Couchbase for Order/Trades storage
-- Influx for marketdata storage quote/query
-- uWebsocket for TCP/UDP
+- **Couchbase** for Orders/Trades storage
+- **Influx** for marketdata storage quote/query
+- **uWebsocket** for TCP/UDP
 
 
-* order types
-    * market order - execute an order as fast as possible, cross the spread
-    * limit order - execute an order with a limit on bid/ask price (e.g. $x or less for a bid, or $y or more for an ask)
-* order params
-    * AON - all or nothing, don't allow partial fills
-    * IOC - immediate or cancel, immediately fill what's possible, cancel the rest
-    * FOK - AON+IOC, immediately match an order in full (without partial fills) or cancel it
+* Order types
+    * **market** order - execute an order as fast as possible, cross the spread
+    * **limit** order - execute an order with a limit on bid/ask price (e.g. $x or less for a bid, or $y or more for an ask)
+* Order params
+    * **AON** - all or nothing, don't allow partial fills
+    * **IOC** - immediate or cancel, immediately fill what's possible, cancel the rest
+    * **FOK** - **AON+IOC**, immediately match an order in full (without partial fills) or cancel it
 
 ## TODO
 
-* stop orders
-* GFD, GTC, GTD parameters
+* ✅ stop orders
+* ✅ GFD, GTC, GTD parameters
 * logic surrounding the order book - trading hours, pre/after market restrictions
 * basic middle & back office functionalities - risk assessment, limits
-* TCP/UDP server that accepts orders
-* reporting market volume, share price
-* reporting acknowledgments & updates to clients (share price, displayed/hidden orders...)
+* ✅ Websocket: TCP/UDP server that accepts orders
+* ✅ HTTP: TCP/UDP server that accepts orders
+* ✅ reporting market volume, share price
+* ✅ reporting acknowledgments & updates to clients (share price, displayed/hidden orders...)
 
 ## Market behaviour
 
@@ -45,25 +46,30 @@ Market orders are always given priority above all other orders, then sorted acco
 When a match occurs between two limit orders the price is set on the bid price. Bid of $25 and ask of $24 will be
 matched at $25.
 
-## Architecture (in development)
+## Architecture
 
 Order book & trade books are per-instrument objects, one order book can only handle one instrument.
 
-* order book - stores active orders in memory, handles order matching
-* trade book - stores daily trades in memory, provides additional data about trading
-* order repository - persistent storage of orders
-* trade repository - persistent storage of trades
+* OrderBook (**Order model**) - stores active orders in memory, db & handles order matching
+* TradeBook (**Trade model**) - stores daily trades in memory, db & provides additional data about trading
 
-### Order book
+* Historical Orders (**OrderRecord model**) - persistent storage of all historical orders
 
-* order repository is used to persist all orders
-* it uses two treemap data structures for ask and bid orders
-    * key is an OrderTracker object which contains necessary info to track an order and sort it
-* active orders are stored in a hashmap for fast lookup (by order ID) and storage
-* order trackers are stored in a hashmap - used to lookup order trackers (usually to be able to search a treemap)
+
+### OrderBook
+* `Order` model/collection is used to persist all orders in couchbase
+* All orders whether active/or not are stored in couchbase under the `Order` collection 
+* When an Order has been filled it is deleted from the `Order` collection and a copy of it is stored in `OrderRecords`
+
+### TradeBook
+* All trades are saved in the `Trade` collection of couchbase
+
 
 
 ## Acknowledgements
+* Matching system full documentation
+  * https://gist.github.com/jdrew1303/e06361070468f6614d52216fb91b79e5
+
 
 * Practical .NET for Financial Markets by Samir Jayaswal and Yogesh Shetty
     * excellent reading material for functional and technical details about financial markets
