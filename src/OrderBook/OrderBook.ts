@@ -443,6 +443,8 @@ export class OrderBook {
 
                 log(`💩💩💩💩: MatchedOrderId=${matched.id} order${order.id}`);
 
+                // Add to orderbook, or create trade
+
                 if (oppositeOrder.unfilledQty() === 0) {
                     // if the other order is filled completely - remove it from the order book
                     await removeOrders(oppositeOrder);
