@@ -281,6 +281,8 @@ export class OrderBook {
     public async submit(order: Order): Promise<boolean> {
         let matchOrder: {matched: Order; trade?: Trade} = null;
 
+        await this.refresh(); // refresh orders
+
         if (order.isBid()) {
             matchOrder = await this.matchOrder(order, this.asks);
         } else {
