@@ -7,6 +7,7 @@ import {getAllOrders, OrderModal} from '../Order/Order.modal';
 import {Currency, CurrencyModel} from '../sofa/Currency';
 import {sortBuyOrders, sortSellOrders} from '../utils/orders';
 import {APPEVENTS, AppEvents} from '../events';
+import {log} from '../log';
 
 const minQty = 1;
 
@@ -46,24 +47,19 @@ export class OrderBook {
     public bindEventsToOrderBook() {
         const events = AppEvents.Instance;
 
-        events.on(APPEVENTS.ADD, (order: Order) => {
+        events.on(APPEVENTS.ADD, async (order: Order) => {
             const newOrder: Order = new Order({
                 ...order,
                 date: new Date(),
             });
 
             // submit this new order
-            this.add(newOrder);
+            await this.add(newOrder);
         });
 
-        events.on(APPEVENTS.CANCEL, (orderId: string) => {
-            const newOrder: Order = new Order({
-                ...order,
-                date: new Date(),
-            });
-
+        events.on(APPEVENTS.CANCEL, async (orderId: string) => {
             // submit this new order
-            this.add(newOrder);
+            await this.cancelOrder(orderId);
         });
 
         events.on(APPEVENTS.UPDATE, (order: Order) => {
