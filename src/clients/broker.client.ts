@@ -6,13 +6,36 @@ import {MarketDataType} from '@stoqey/client-graphql';
 import {log} from '../log';
 import {Currency, CurrencyModel} from '../sofa/Currency';
 import {APPEVENTS, AppEvents} from '../events';
+import {OrderModal} from '../Order/Order.modal';
 
 export const brokerClient = (app: nanoexpressApp): nanoexpressApp => {
     const events = AppEvents.Instance;
 
     // @ts-ignore
+    app.get('/orders', async function (req, res) {
+        const clientId = req.query || req.params.clientId;
+        try {
+            let where = {};
+            if (clientId) {
+                where = {clientId: {$eq: clientId}};
+            }
+            const orders = await OrderModal.pagination({
+                select: '*',
+                where,
+                limit: 100,
+            });
+
+            return res.json({success: true, data: orders});
+        } catch (error) {
+            console.error(error);
+            console.log('error trying to get orders');
+            return res.json({success: false, data: [], message: error && error.message});
+        }
+    });
+
+    // @ts-ignore
     app.get('/cancel', async function (req, res) {
-        const orderId = req.query || req.params.orderId;
+        const orderId = req.query || req.query.orderId;
         events.emit(APPEVENTS.CANCEL, orderId);
         return res.json({message: 'Successfully sent', status: 200});
     });
