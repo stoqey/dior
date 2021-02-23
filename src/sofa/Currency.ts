@@ -1,6 +1,6 @@
 import {Model} from '@stoqey/sofa';
 import includes from 'lodash/includes';
-import {log} from '../log';
+import {log, verbose} from '../log';
 
 const modelName = 'Currency';
 export const instrument = 'STQ';
@@ -66,7 +66,7 @@ export const refreshCurrency = async () => {
             ...currency,
             date: new Date(),
         };
-        log(`${instrument}: Close${dataToSend.close}`);
+        verbose(`${instrument}: Close${dataToSend.close}`);
 
         currencySingleton.setCurrency(dataToSend);
     } catch (error) {
