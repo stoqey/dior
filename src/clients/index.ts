@@ -6,6 +6,7 @@ import {PORT, appName, HOSTNAME} from '../config';
 import {brokerClient} from './broker.client';
 import {marketDataClient} from './market.data';
 import {socketClient} from './socket';
+import {refreshCurrency} from '../sofa/Currency';
 
 // BrokerClient
 // MarketData Client
@@ -48,6 +49,10 @@ export async function clients(): Promise<boolean> {
         await app.listen(PORT);
 
         log(`Started ${appName} on ${PORT}`);
+
+        setInterval(() => {
+            refreshCurrency();
+        }, 3000);
 
         return true;
     } catch (error) {

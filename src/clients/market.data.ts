@@ -3,7 +3,7 @@ import nanoexpress, {nanoexpressApp} from 'nanoexpress';
 import {MarketDataType} from '@stoqey/client-graphql';
 import {log} from '../log';
 
-import {Currency, CurrencyModel} from '../sofa/Currency';
+import {Currency, CurrencyModel, CurrencySingleton} from '../sofa/Currency';
 
 export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
     // @ts-ignore
@@ -25,23 +25,10 @@ export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
 
     // @ts-ignore
     app.get('/quote', async function (req, res) {
-        const instrument =
-            (req.query && req.query.symbol) || (req.params && req.params.symbol) || 'STQ';
         // Get latest data
         // Get top use as quote
-        try {
-            const currency: Currency = await CurrencyModel.findById(instrument);
-
-            const dataToSend: MarketDataType = {
-                ...currency,
-                date: new Date(),
-            };
-
-            return res.json(dataToSend);
-        } catch (error) {
-            console.log('error getting quote', error);
-            res.json({});
-        }
+        const currencySingleton = CurrencySingleton.app;
+        res.json(currencySingleton.getCurrency());
     });
 
     app.get('/v1/query', function (req: nanoexpress.HttpRequest): nanoexpressApp {

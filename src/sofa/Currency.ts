@@ -66,8 +66,9 @@ export const refreshCurrency = async () => {
             ...currency,
             date: new Date(),
         };
+        log(`${instrument}: Close${dataToSend.close}`);
 
-        currencySingleton.setCurrency(currency);
+        currencySingleton.setCurrency(dataToSend);
     } catch (error) {
         console.error('error refreshing currency', error);
     }
