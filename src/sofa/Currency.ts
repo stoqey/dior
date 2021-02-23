@@ -27,6 +27,7 @@ export interface Currency {
 export const CurrencyModel = new Model(modelName);
 
 export const findCurrencyOrCreateIt = async () => {
+    const currencySingleton = CurrencySingleton.app;
     const model = new Model('Currency');
     const collection = model.getCollection();
 
@@ -51,6 +52,7 @@ export const findCurrencyOrCreateIt = async () => {
     const createNewCurrency = async () => {
         try {
             await collection.upsert(instrument, newCurrencyDocument);
+            currencySingleton.setCurrency(newCurrencyDocument);
             log(`Create currency document`, newCurrencyDocument);
         } catch (error) {
             process.exit(1);
@@ -62,6 +64,7 @@ export const findCurrencyOrCreateIt = async () => {
          * Try and find currency document
          */
         const result: {content: Currency; cas: any} = await collection.get(instrument);
+        currencySingleton.setCurrency(result && result.content);
         log('currency', result && result.content);
     } catch (e) {
         const message = e && e.message;
@@ -71,3 +74,29 @@ export const findCurrencyOrCreateIt = async () => {
         }
     }
 };
+
+export class CurrencySingleton {
+    currency: Currency;
+    static _instance: CurrencySingleton;
+
+    /**
+     * Default instance
+     */
+    public static get app(): CurrencySingleton {
+        return this._instance || (this._instance = new this());
+    }
+
+    /**
+     * setCurrency
+     */
+    public setCurrency(currency: Currency) {
+        this.currency = currency;
+    }
+
+    /**
+     * getCurrency
+     */
+    public getCurrency() {
+        return this.currency;
+    }
+}
