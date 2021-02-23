@@ -13,7 +13,7 @@ export const brokerClient = (app: nanoexpressApp): nanoexpressApp => {
 
     // @ts-ignore
     app.get('/orders', async function (req, res) {
-        const clientId = req.query || req.params.clientId;
+        const clientId = req.query && req.query.clientId;
         try {
             let where = {};
             if (clientId) {
@@ -24,6 +24,8 @@ export const brokerClient = (app: nanoexpressApp): nanoexpressApp => {
                 where,
                 limit: 100,
             });
+
+            log(`orders are ${orders && orders.length}`);
 
             return res.json({success: true, data: orders});
         } catch (error) {
