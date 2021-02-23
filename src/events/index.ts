@@ -15,6 +15,9 @@ export enum APPEVENTS {
     UPDATE_ORDER = 'update_order',
     CANCEL_ORDER = 'cancel_order',
     COMPLETE_ORDER = 'complete_order',
+
+    STQ_QUOTE = 'stq_quote',
+    STQ_TRADE = 'stq_trade',
 }
 
 export class AppEvents extends EventEmitter.EventEmitter {
