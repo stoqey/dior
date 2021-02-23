@@ -26,6 +26,32 @@ export interface Currency {
 
 export const CurrencyModel = new Model(modelName);
 
+export class CurrencySingleton {
+    currency: Currency;
+    static _instance: CurrencySingleton;
+
+    /**
+     * Default instance
+     */
+    public static get app(): CurrencySingleton {
+        return this._instance || (this._instance = new this());
+    }
+
+    /**
+     * setCurrency
+     */
+    public setCurrency(currency: Currency) {
+        this.currency = currency;
+    }
+
+    /**
+     * getCurrency
+     */
+    public getCurrency() {
+        return this.currency;
+    }
+}
+
 export const findCurrencyOrCreateIt = async () => {
     const currencySingleton = CurrencySingleton.app;
     const model = new Model('Currency');
@@ -74,29 +100,3 @@ export const findCurrencyOrCreateIt = async () => {
         }
     }
 };
-
-export class CurrencySingleton {
-    currency: Currency;
-    static _instance: CurrencySingleton;
-
-    /**
-     * Default instance
-     */
-    public static get app(): CurrencySingleton {
-        return this._instance || (this._instance = new this());
-    }
-
-    /**
-     * setCurrency
-     */
-    public setCurrency(currency: Currency) {
-        this.currency = currency;
-    }
-
-    /**
-     * getCurrency
-     */
-    public getCurrency() {
-        return this.currency;
-    }
-}
