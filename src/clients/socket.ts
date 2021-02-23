@@ -34,12 +34,14 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
             console.log('Connected');
 
             const handleStqTrade = function (data) {
+                data.event = APPEVENTS.STQ_TRADE;
                 console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.STQ_TRADE', data);
                 ws.send(data);
             };
             events.on(APPEVENTS.STQ_TRADE, handleStqTrade);
 
             const handleStqQuote = function (data) {
+                data.event = APPEVENTS.STQ_QUOTE;
                 console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.STQ_QUOTE', data);
                 ws.send(data);
             };
@@ -47,18 +49,21 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
 
             // update, cancel, complete order
             const handleUpdateOrder = function (data) {
+                data.event = APPEVENTS.UPDATE_ORDER;
                 console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.UPDATE_ORDER', data);
                 ws.send(data);
             };
             events.on(APPEVENTS.UPDATE_ORDER, handleUpdateOrder);
 
             const handleCancelOrder = function (data) {
+                data.event = APPEVENTS.CANCEL_ORDER;
                 console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.CANCEL_ORDER', data);
                 ws.send(data);
             };
             events.on(APPEVENTS.CANCEL_ORDER, handleCancelOrder);
 
             const handleCompleteOrder = function (data) {
+                data.event = APPEVENTS.COMPLETE_ORDER;
                 console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.COMPLETE_ORDER', data);
                 ws.send(data);
             };
