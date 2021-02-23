@@ -1,5 +1,6 @@
 import {Model} from '@stoqey/sofa';
 import includes from 'lodash/includes';
+import {APPEVENTS, AppEvents} from '../events';
 import {log, verbose} from '../log';
 
 const modelName = 'Currency';
@@ -59,6 +60,7 @@ export const getCurrency = (): Currency => {
 
 export const refreshCurrency = async () => {
     try {
+        const events = AppEvents.Instance;
         const currencySingleton = CurrencySingleton.app;
         const currency: Currency = await CurrencyModel.findById(instrument);
 
@@ -67,8 +69,8 @@ export const refreshCurrency = async () => {
             date: new Date(),
         };
         verbose(`${instrument}: Close${dataToSend.close}`);
-
         currencySingleton.setCurrency(dataToSend);
+        events.emit(APPEVENTS.STQ_QUOTE, dataToSend); // quote the current quote
     } catch (error) {
         console.error('error refreshing currency', error);
     }
