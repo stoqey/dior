@@ -52,6 +52,27 @@ export class CurrencySingleton {
     }
 }
 
+export const getCurrency = (): Currency => {
+    const currencySingleton = CurrencySingleton.app;
+    return currencySingleton.getCurrency();
+};
+
+export const refreshCurrency = async () => {
+    try {
+        const currencySingleton = CurrencySingleton.app;
+        const currency: Currency = await CurrencyModel.findById(instrument);
+
+        const dataToSend: Currency = {
+            ...currency,
+            date: new Date(),
+        };
+
+        currencySingleton.setCurrency(currency);
+    } catch (error) {
+        console.error('error refreshing currency', error);
+    }
+};
+
 export const findCurrencyOrCreateIt = async () => {
     const currencySingleton = CurrencySingleton.app;
     const model = new Model('Currency');
