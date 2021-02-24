@@ -27,45 +27,49 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
 
     // @ts-ignore
     app.ws('/', (_req, res) => {
-        console.log('Connecting...');
+        log('📡📡📡: Connecting...');
 
         // @ts-ignore
         res.on('connection', (ws) => {
-            console.log('Connected');
+            log('✅✅✅: Connected');
 
-            const handleStqTrade = function (data) {
+            const handleStqTrade = function (data: any) {
                 data.event = APPEVENTS.STQ_TRADE;
                 console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.STQ_TRADE', data);
-                ws.send(data);
+                ws.send(JSON.stringify(data));
             };
             events.on(APPEVENTS.STQ_TRADE, handleStqTrade);
 
-            const handleStqQuote = function (data) {
+            const handleStqQuote = function (data: any) {
                 data.event = APPEVENTS.STQ_QUOTE;
                 console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.STQ_QUOTE', data);
-                ws.send(data);
+                ws.send(JSON.stringify(data));
             };
             events.on(APPEVENTS.STQ_QUOTE, handleStqQuote);
 
             // update, cancel, complete order
-            const handleUpdateOrder = function (data) {
+            const handleUpdateOrder = function (data: any) {
                 data.event = APPEVENTS.UPDATE_ORDER;
                 console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.UPDATE_ORDER', data);
-                ws.send(data);
+                ws.send(JSON.stringify(data));
             };
             events.on(APPEVENTS.UPDATE_ORDER, handleUpdateOrder);
 
-            const handleCancelOrder = function (data) {
-                data.event = APPEVENTS.CANCEL_ORDER;
+            const handleCancelOrder = function (orderId: string) {
+                const data = {
+                    orderId,
+                    event: APPEVENTS.CANCEL_ORDER,
+                };
+
                 console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.CANCEL_ORDER', data);
-                ws.send(data);
+                ws.send(JSON.stringify(data));
             };
             events.on(APPEVENTS.CANCEL_ORDER, handleCancelOrder);
 
-            const handleCompleteOrder = function (data) {
+            const handleCompleteOrder = function (data: any) {
                 data.event = APPEVENTS.COMPLETE_ORDER;
                 console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.COMPLETE_ORDER', data);
-                ws.send(data);
+                ws.send(JSON.stringify(data));
             };
             events.on(APPEVENTS.COMPLETE_ORDER, handleCompleteOrder);
 
@@ -98,7 +102,7 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
                 // Cancel order
                 // update order
                 console.log('Message received', msg);
-                ws.send(msg);
+                // ws.send(msg);
             });
 
             ws.on('close', (code, message) => {
@@ -107,13 +111,13 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
                 events.off(APPEVENTS.UPDATE_ORDER, handleUpdateOrder);
                 events.off(APPEVENTS.CANCEL_ORDER, handleCancelOrder);
                 events.off(APPEVENTS.COMPLETE_ORDER, handleCompleteOrder);
-                console.log('Connection closed', {code, message});
+                log('⬇⬇⬇: Connection closed', {code, message});
             });
         });
 
         // @ts-ignore
         res.on('upgrade', () => {
-            console.log('Connection upgrade');
+            log('⬆⬆⬆: Connection upgrade');
         });
     });
 };
