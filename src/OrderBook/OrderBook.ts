@@ -192,12 +192,18 @@ export class OrderBook {
      * refresh
      */
     public async refresh() {
+        const events = AppEvents.Instance;
         // Get all trades
         // Sort buys
         // Sort sells
 
         // Set active, bids, and asks
         let allOrders: Order[] = await getAllOrders(); // all orders, not trackers
+
+        // emit that we have new fresh orders
+        // TODO rate limiter
+        events.emit(APPEVENTS.STQ_ORDERS, allOrders);
+
         allOrders = allOrders.map(
             (o) =>
                 new Order({
