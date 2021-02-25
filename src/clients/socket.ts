@@ -34,12 +34,15 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
             log('✅✅✅: Connected');
 
             const handleStqOrders = function (data: any) {
-                data.event = APPEVENTS.STQ_ORDERS;
+                const dataToSend = {
+                    event: APPEVENTS.STQ_ORDERS,
+                    data,
+                };
                 console.log(
                     'ws/stq -> res.connection => nrp.on -> APPEVENTS.STQ_ORDERS',
                     data && data.length
                 );
-                ws.send(JSON.stringify(data));
+                ws.send(JSON.stringify(dataToSend));
             };
             events.on(APPEVENTS.STQ_ORDERS, handleStqOrders);
 
