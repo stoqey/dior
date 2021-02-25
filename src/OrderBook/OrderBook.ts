@@ -248,8 +248,10 @@ export class OrderBook {
      */
     public async add(currentOrder: Order): Promise<boolean> {
         console.log('current order', JSON.stringify(currentOrder));
+        const orderId = generateUUID();
         const order: Order = new Order({
             ...currentOrder,
+            id: orderId,
             date: new Date(),
         });
 
