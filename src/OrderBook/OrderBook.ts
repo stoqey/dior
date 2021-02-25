@@ -55,6 +55,11 @@ export class OrderBook {
             await this.add(jsonData as Order);
         });
 
+        events.on(APPEVENTS.GET_STQ_ORDERS, async () => {
+            // Refresh orders and send them to all clients
+            await this.refresh();
+        });
+
         events.on(APPEVENTS.CANCEL, async (orderId: string) => {
             // submit this new order
             await this.cancelOrder(orderId);

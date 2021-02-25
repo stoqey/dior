@@ -4,7 +4,7 @@ import {isEmpty} from 'lodash';
 
 import {APPEVENTS, AppEvents} from '../events';
 import {JSONDATA} from '../utils';
-import {log} from '../log';
+import {log, verbose} from '../log';
 
 interface Imessage {
     type: 'get' | 'add' | 'update' | 'cancel';
@@ -48,14 +48,17 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
 
             const handleStqTrade = function (data: any) {
                 data.event = APPEVENTS.STQ_TRADE;
-                console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.STQ_TRADE', data);
+                console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.STQ_TRADE');
                 ws.send(JSON.stringify(data));
             };
             events.on(APPEVENTS.STQ_TRADE, handleStqTrade);
 
             const handleStqQuote = function (data: any) {
                 data.event = APPEVENTS.STQ_QUOTE;
-                console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.STQ_QUOTE', data);
+                console.log(
+                    'ws/stq -> res.connection => nrp.on -> APPEVENTS.STQ_QUOTE',
+                    data && data.close
+                );
                 ws.send(JSON.stringify(data));
             };
             events.on(APPEVENTS.STQ_QUOTE, handleStqQuote);
@@ -63,7 +66,7 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
             // update, cancel, complete order
             const handleUpdateOrder = function (data: any) {
                 data.event = APPEVENTS.UPDATE_ORDER;
-                console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.UPDATE_ORDER', data);
+                console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.UPDATE_ORDER');
                 ws.send(JSON.stringify(data));
             };
             events.on(APPEVENTS.UPDATE_ORDER, handleUpdateOrder);
@@ -87,6 +90,7 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
             events.on(APPEVENTS.COMPLETE_ORDER, handleCompleteOrder);
 
             ws.on('message', (msg) => {
+                verbose(`STQ: MESSAGE ${msg}`);
                 try {
                     const data: Imessage = JSONDATA(msg) as any;
                     const typ: any = data && data.type;
@@ -104,6 +108,10 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
                         if (typ === APPEVENTS.CANCEL) {
                             events.emit(APPEVENTS.CANCEL, dataReceived);
                         }
+
+                        if (typ === APPEVENTS.GET_STQ_ORDERS) {
+                            events.emit(APPEVENTS.GET_STQ_ORDERS, null);
+                        }
                         // check data types from here
                     }
                 } catch (error) {
@@ -114,7 +122,7 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
                 // Add order
                 // Cancel order
                 // update order
-                console.log('Message received', msg);
+                // console.log('Message received', msg);
                 // ws.send(msg);
             });
 

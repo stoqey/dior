@@ -30,6 +30,11 @@ export enum APPEVENTS {
      * Order[]
      */
     STQ_ORDERS = 'stq_orders',
+
+    /**
+     * Get STQ orders
+     */
+    GET_STQ_ORDERS = 'get_stq_orders',
 }
 
 export class AppEvents extends EventEmitter.EventEmitter {
