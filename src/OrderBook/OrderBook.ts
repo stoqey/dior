@@ -261,7 +261,7 @@ export class OrderBook {
         };
 
         console.log(order);
-        if (order.qty <= minQty) {
+        if (order.qty < minQty) {
             console.error(ErrInvalidQty);
             // check the qty
             return await returnAndRefresh(false);
