@@ -11,14 +11,18 @@ export interface XOrder {
 
 type PossibleMatch = [Order, number];
 
+interface MatchResults {
+    totalFilled: number;
+    orders: PossibleMatch[];
+}
 /**
  * Match order
  * order, offers
  */
-export function matchOrder(order: XOrder, market: XOrder[]): void {
+export const matchOrder = (order: XOrder, market: XOrder[]): MatchResults => {
     const isBuying = order.action === 'BUY';
 
-    const offers = market.filter((i) => (isBuying ? i.action === 'BUY' : i.action === 'BUY'));
+    const offers = market.filter((i) => (isBuying ? i.action === 'SELL' : i.action === 'BUY'));
 
     const orderPrice = order.price;
 
@@ -30,7 +34,7 @@ export function matchOrder(order: XOrder, market: XOrder[]): void {
     const qtyRequired = order.qty;
     let qtyPromised = qtyRequired;
 
-    offers.forEach((offer: Order) => {
+    sortedOffers.forEach((offer: Order) => {
         const currentOfferQty = offer.qty;
         const currentOfferPrice = offer.price;
 
@@ -44,7 +48,7 @@ export function matchOrder(order: XOrder, market: XOrder[]): void {
         // for limit price
         if (isBuying) {
             // For buying
-            const myQtyIsFilled = qtyPromised >= currentOfferQty;
+            const myQtyIsFilled = qtyPromised <= currentOfferQty;
 
             // Matched limit price
             if (orderPrice >= currentOfferPrice) {
@@ -52,9 +56,9 @@ export function matchOrder(order: XOrder, market: XOrder[]): void {
 
                 if (myQtyIsFilled) {
                     // finish this order no need to get other
-                    qtyPromised -= qtyPromised;
+                    qtyPromised = 0;
                     // offer.filledQty += qtyPromised; // update the offer with filled qty
-                    possibleMatches.push([offer, qtyPromised]);
+                    possibleMatches.push([offer, qtyRequired]);
                     return;
                 } else {
                     // reduce qtyPromised
@@ -85,9 +89,13 @@ export function matchOrder(order: XOrder, market: XOrder[]): void {
         }
     });
 
-    console.log(
-        `RequiredQTY=${qtyRequired} 
-         CollectedQTY=${qtyPromised}`,
-        JSON.stringify(possibleMatches)
-    );
-}
+    console.log(`RequiredQTY=${qtyRequired}`);
+    console.log(`CollectedQTY=${qtyPromised}`);
+    console.log('-------------------------');
+    console.log(JSON.stringify(possibleMatches));
+
+    const totalFilled = possibleMatches.map((g) => g[1]).reduce((x, i = 0) => i + x);
+
+    // Return value
+    return {totalFilled, orders: possibleMatches};
+};

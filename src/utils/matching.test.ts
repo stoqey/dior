@@ -44,14 +44,14 @@ const bearsMarket: XOrder[] = [
 describe('BEAR: The Matching Machine', () => {
     const market = [...bearsMarket];
     it('it should match slice BUY order', () => {
-        const buyOrder: XOrder = {
+        const order: XOrder = {
             qty: 30,
             action: 'BUY',
             price: 3.21,
         };
 
-        matchOrder(buyOrder, market);
+        const matchedOrder = matchOrder(order, market);
 
-        expect(buyOrder).to.be.not.null;
+        expect(matchedOrder.totalFilled).to.be.equal(order.qty);
     });
 });
