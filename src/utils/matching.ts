@@ -34,10 +34,10 @@ export function matchOrder(order: Order, offers: Order[]): void {
         // for limit price
         if (isBuying) {
             // For buying
+            const myQtyIsFilled = qtyPromised >= currentOfferQty;
 
             // Matched limit price
             if (orderPrice >= currentOfferPrice) {
-                const myQtyIsFilled = qtyPromised >= currentOfferQty;
                 // e.g currentOffer = 20, my offer 10
 
                 if (myQtyIsFilled) {
@@ -50,10 +50,34 @@ export function matchOrder(order: Order, offers: Order[]): void {
                     // reduce qtyPromised
                     qtyPromised -= currentOfferQty;
                     possibleMatches.push([offer, currentOfferQty]); // add to possible offers
+                    return;
                 }
             }
         } else {
             // for selling
+            const myQtyIsFilled = qtyPromised >= currentOfferQty;
+
+            // Matched limit price
+            if (orderPrice <= currentOfferPrice) {
+                if (myQtyIsFilled) {
+                    // finish this order no need to get other
+                    qtyPromised -= qtyPromised;
+                    // offer.filledQty += qtyPromised; // update the offer with filled qty
+                    possibleMatches.push([offer, qtyPromised]);
+                    return;
+                } else {
+                    // reduce qtyPromised
+                    qtyPromised -= currentOfferQty;
+                    possibleMatches.push([offer, currentOfferQty]); // add to possible offers
+                    return;
+                }
+            }
         }
     });
+
+    console.log(
+        `RequiredQTY=${qtyRequired} 
+         CollectedQTY=${qtyPromised}`,
+        JSON.stringify(possibleMatches)
+    );
 }
