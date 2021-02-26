@@ -1,4 +1,5 @@
 import 'mocha';
+import sum from 'lodash/sum';
 import {expect} from 'chai';
 import {Order} from '../Order';
 import {Action} from '../shared';
@@ -77,5 +78,18 @@ describe('BEAR: The Matching Machine', () => {
         const matchedOrder = matchOrder(order, market);
 
         expect(matchedOrder.totalFilled).to.be.equal(order.qty);
+    });
+
+    it('it should match a large BUY order', () => {
+        const totalOrderBook = sum(market.filter(i => i.action === "SELL").map(o => o.qty));
+        const order: XOrder = {
+            qty: totalOrderBook,
+            action: 'BUY',
+            price: 5.61, // highest ASK price
+        };
+
+        const matchedOrder = matchOrder(order, market);
+
+        expect(matchedOrder.totalFilled).to.be.equal(totalOrderBook);
     });
 });
