@@ -191,7 +191,11 @@ export class OrderBook {
      * updateActiveOrder
      * @param order Order
      */
-    public async updateActiveOrder(order: Order) {}
+    public async updateActiveOrder(order: Order) {
+        // set workedOn field
+        try {
+        } catch (error) {}
+    }
 
     /**
      * refresh
@@ -433,32 +437,39 @@ export class OrderBook {
 
                 const myPrice = order.price;
 
+                // TODO for market orders
+                // TODO for
+
                 if (buying) {
+                    // myPrice = 3.3, their ask is 3.10
                     if (oppositeOrder.type === 'limit') {
-                        if (myPrice < oppositeOrder.price) {
+                        if (myPrice >= oppositeOrder.price) {
                             matched = oppositeOrder; // other prices are going to be even higher than our limit
-                            break;
-                        } else {
-                            // our bid is higher or equal to their ask - set price to myPrice
-                            price = myPrice; // e.g. our bid is $20.10, their ask is $20 - trade executes at $20.10
                         }
-                    } else {
-                        // we have a limit, they are selling at our price
-                        price = myPrice;
+
+                        // if (myPrice <= oppositeOrder.price) {
+                        //     matched = oppositeOrder; // other prices are going to be even higher than our limit
+                        //     break;
+                        // } else {
+                        //     // our bid is higher or equal to their ask - set price to myPrice
+                        //     price = myPrice; // e.g. our bid is $20.10, their ask is $20 - trade executes at $20.10
+                        // }
                     }
+
+                    // TODO for market
                 } else {
                     // we're selling
                     if (oppositeOrder.type === 'limit') {
-                        if (myPrice > oppositeOrder.price) {
-                            // we can't match since our ask is higher than the best bid
-                            break;
-                        } else {
-                            price = oppositeOrder.price; // set price to their bid
+                        if (myPrice <= oppositeOrder.price) {
+                            // price = oppositeOrder.price; // set price to their bid
+                            matched = oppositeOrder; // other prices are going to be even higher than our limit
                         }
-                    } else {
-                        price = myPrice;
                     }
                 }
+
+                // Check if enough qty before matching
+                // Check if matched or not
+                // Matching order here begins
 
                 if (buying) {
                     seller = oppositeOrder.clientId;
