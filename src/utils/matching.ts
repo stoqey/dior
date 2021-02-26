@@ -1,5 +1,13 @@
 import {Order} from '../Order';
+import {Action} from '../shared';
 import {sortBuyOrders, sortSellOrders} from './orders';
+
+export interface XOrder {
+    qty: number;
+    price: number;
+    action: Action;
+    date?: Date;
+}
 
 type PossibleMatch = [Order, number];
 
@@ -7,8 +15,10 @@ type PossibleMatch = [Order, number];
  * Match order
  * order, offers
  */
-export function matchOrder(order: Order, offers: Order[]): void {
+export function matchOrder(order: XOrder, market: XOrder[]): void {
     const isBuying = order.action === 'BUY';
+
+    const offers = market.filter((i) => (isBuying ? i.action === 'BUY' : i.action === 'BUY'));
 
     const orderPrice = order.price;
 
