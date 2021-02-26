@@ -44,52 +44,75 @@ const bearsMarket: XOrder[] = [
 
 describe('BEAR: The Matching Machine', () => {
     const market = [...bearsMarket];
-    it('it should match slice BUY order', () => {
+
+    // BUY
+    // BUY
+    // BUY
+    // it('it should match slice BUY order', () => {
+    //     const order: XOrder = {
+    //         qty: 30,
+    //         action: 'BUY',
+    //         price: 3.21,
+    //     };
+
+    //     const matchedOrder = matchOrder(order, market);
+
+    //     expect(matchedOrder.totalFilled).to.be.equal(order.qty);
+    // });
+
+    // it('it should match partially a BUY order', () => {
+    //     const order: XOrder = {
+    //         qty: 200,
+    //         action: 'BUY',
+    //         price: 3.21,
+    //     };
+
+    //     const matchedOrder = matchOrder(order, market);
+
+    //     expect(matchedOrder.totalFilled).to.be.equal(order.qty / 2);
+    // });
+
+    // it('it should match a multiple a BUY order', () => {
+    //     const order: XOrder = {
+    //         qty: 200,
+    //         action: 'BUY',
+    //         price: 3.61,
+    //     };
+
+    //     const matchedOrder = matchOrder(order, market);
+
+    //     expect(matchedOrder.totalFilled).to.be.equal(order.qty);
+    // });
+
+    // it('it should match a large BUY order', () => {
+    //     const totalOrderBook = sum(market.filter((i) => i.action === 'SELL').map((o) => o.qty));
+    //     const order: XOrder = {
+    //         qty: totalOrderBook,
+    //         action: 'BUY',
+    //         price: 5.61, // highest ASK price
+    //     };
+
+    //     const matchedOrder = matchOrder(order, market);
+
+    //     expect(matchedOrder.totalFilled).to.be.equal(totalOrderBook);
+    // });
+
+    // BUY
+    // BUY
+    // BUY
+
+    // SELL
+    // SELL
+    // SELL
+    it('it should match slice SELL order', () => {
         const order: XOrder = {
-            qty: 30,
-            action: 'BUY',
-            price: 3.21,
+            qty: 200,
+            action: 'SELL',
+            price: 3.00,
         };
 
         const matchedOrder = matchOrder(order, market);
 
         expect(matchedOrder.totalFilled).to.be.equal(order.qty);
-    });
-
-    it('it should match partially a BUY order', () => {
-        const order: XOrder = {
-            qty: 200,
-            action: 'BUY',
-            price: 3.21,
-        };
-
-        const matchedOrder = matchOrder(order, market);
-
-        expect(matchedOrder.totalFilled).to.be.equal(order.qty / 2);
-    });
-
-    it('it should match a multiple a BUY order', () => {
-        const order: XOrder = {
-            qty: 200,
-            action: 'BUY',
-            price: 3.61,
-        };
-
-        const matchedOrder = matchOrder(order, market);
-
-        expect(matchedOrder.totalFilled).to.be.equal(order.qty);
-    });
-
-    it('it should match a large BUY order', () => {
-        const totalOrderBook = sum(market.filter(i => i.action === "SELL").map(o => o.qty));
-        const order: XOrder = {
-            qty: totalOrderBook,
-            action: 'BUY',
-            price: 5.61, // highest ASK price
-        };
-
-        const matchedOrder = matchOrder(order, market);
-
-        expect(matchedOrder.totalFilled).to.be.equal(totalOrderBook);
     });
 });

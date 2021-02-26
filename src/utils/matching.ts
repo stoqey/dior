@@ -54,10 +54,11 @@ export const matchOrder = (order: XOrder, market: XOrder[]): MatchResults => {
         // Check if can be matched
         // TODO market price
 
+        const myQtyIsFilled = qtyPromised <= currentOfferQty;
+
         // for limit price
         if (isBuying) {
             // For buying
-            const myQtyIsFilled = qtyPromised <= currentOfferQty;
 
             // Matched limit price
             if (orderPrice >= currentOfferPrice) {
@@ -77,27 +78,24 @@ export const matchOrder = (order: XOrder, market: XOrder[]): MatchResults => {
                     console.log(`QTY PARTIALLY FILLED FOR -----> MATCH: ${orderName}`);
                 }
             }
+        } else {
+            // Matched limit price
+            if (orderPrice <= currentOfferPrice) {
+                if (myQtyIsFilled) {
+                    // offer.filledQty += qtyPromised; // update the offer with filled qty
+                    possibleMatches.push([offer, qtyPromised]);
+                    // finish this order no need to get other
+                    qtyPromised = 0;
+                    console.log(`QTY FILLED FOR -----> MATCH: ${orderName}`);
+                    break;
+                } else {
+                    // reduce qtyPromised
+                    qtyPromised -= currentOfferQty;
+                    possibleMatches.push([offer, currentOfferQty]); // add to possible offers
+                    console.log(`QTY PARTIALLY FILLED FOR -----> MATCH: ${orderName}`);
+                }
+            }
         }
-        // else {
-        //     // for selling
-        //     const myQtyIsFilled = qtyPromised >= currentOfferQty;
-
-        //     // Matched limit price
-        //     if (orderPrice <= currentOfferPrice) {
-        //         if (myQtyIsFilled) {
-        //             // finish this order no need to get other
-        //             qtyPromised -= qtyPromised;
-        //             // offer.filledQty += qtyPromised; // update the offer with filled qty
-        //             possibleMatches.push([offer, qtyPromised]);
-        //             return;
-        //         } else {
-        //             // reduce qtyPromised
-        //             qtyPromised -= currentOfferQty;
-        //             possibleMatches.push([offer, currentOfferQty]); // add to possible offers
-        //             return;
-        //         }
-        //     }
-        // }
     }
 
     console.log(`RequiredQTY=${qtyRequired}`);
