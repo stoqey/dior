@@ -252,6 +252,8 @@ export class OrderBook {
      */
     public async add(currentOrder: Order): Promise<boolean> {
         console.log('current order', JSON.stringify(currentOrder));
+
+        // TODO if order can be kept or is JUST noise
         const orderId = generateUUID();
         const order: Order = new Order({
             ...currentOrder,
@@ -388,7 +390,7 @@ export class OrderBook {
             for (const offer of offers) {
                 const oppositeOrder = offer;
 
-                const oppositeAON = oppositeOrder.params;
+                // const oppositeAON = oppositeOrder.params;
                 if (await oppositeOrder.isCancelled()) {
                     log(`❌: Canceled for isCancelled`);
                     await oppositeOrder.cancel(); // mark order for removal
@@ -396,6 +398,14 @@ export class OrderBook {
                 }
 
                 const qty = this.min(order.unfilledQty(), oppositeOrder.unfilledQty());
+
+                const orderQty = order.unfilledQty();
+                const oppositeQty = oppositeOrder.unfilledQty();
+                const smallestQty = this.min(orderQty, oppositeQty);
+
+                // const currentOrderToBeFilled = smallestQty === orderQty;
+                const currentOppOrderToBeFilled = smallestQty === oppositeQty;
+                const currentAndOppAreEvenlyFilled = orderQty === oppositeQty;
 
                 // TODO Check AON
                 // if (currentAON && qty != order.unfilledQty()) {
@@ -411,8 +421,6 @@ export class OrderBook {
                 //     continue; // couldn't find a match - other offer requires AON but our order can't fill it completely
                 // }
 
-                let price = oppositeOrder.price;
-
                 /**
                  * Case orderType
                  */
@@ -427,15 +435,17 @@ export class OrderBook {
                     continue; // two opposing market orders are usually forbidden (rejected) - continue matching
                 }
 
-                if (oppositeOrder.type === 'limit') {
-                    price = oppositeOrder.price; // crossing the spread
-                }
-
                 /**
                  * Case typeLimit
                  */
 
                 const myPrice = order.price;
+                const oppoPrice = oppositeOrder.price;
+                let price = null;
+
+                // if (oppositeOrder.type === 'limit') {
+                //     price = oppositeOrder.price; // crossing the spread
+                // }
 
                 // TODO for market orders
                 // TODO for
@@ -443,7 +453,7 @@ export class OrderBook {
                 if (buying) {
                     // myPrice = 3.3, their ask is 3.10
                     if (oppositeOrder.type === 'limit') {
-                        if (myPrice >= price) {
+                        if (myPrice >= oppoPrice) {
                             matched = oppositeOrder; // other prices are going to be even higher than our limit
                         }
 
@@ -454,9 +464,11 @@ export class OrderBook {
                         //     // our bid is higher or equal to their ask - set price to myPrice
                         //     price = myPrice; // e.g. our bid is $20.10, their ask is $20 - trade executes at $20.10
                         // }
+                    } else {
+                        // For market matching
+                        price = oppoPrice;
+                        matched = oppositeOrder;
                     }
-
-                    // TODO for market
                 } else {
                     // we're selling
                     if (oppositeOrder.type === 'limit') {
@@ -464,6 +476,10 @@ export class OrderBook {
                             // price = oppositeOrder.price; // set price to their bid
                             matched = oppositeOrder; // other prices are going to be even higher than our limit
                         }
+                    } else {
+                        // For market matching
+                        price = oppoPrice;
+                        matched = oppositeOrder;
                     }
                 }
 
@@ -483,9 +499,13 @@ export class OrderBook {
                     bidOrderId = oppositeOrder.id;
                 }
 
+                const currentOrderToBeFilled = smallestQty === orderQty;
+                // const currentOppOrderToBeFilled = smallestQty === oppositeQty;
+
                 order.filledQty += qty;
                 oppositeOrder.filledQty += qty;
 
+                // TODO add action to trade
                 const newTrade = new Trade({
                     id: generateUUID(),
                     buyer,
@@ -503,17 +523,17 @@ export class OrderBook {
                 // Enter trade
                 await this.tradeBook.enter(newTrade);
 
+                if (currentOrderToBeFilled) {
+                    price = oppositeOrder.price;
+                }
                 // update currency object
                 await this.saveMarketPrice(price);
                 log(`✅✅✅: Set market price ${price}`);
 
-                matched = oppositeOrder;
-
                 log(`💩💩💩💩: MatchedOrderId=${matched.id} order${order.id}`);
 
-                // Add to orderbook, or create trade
-
-                if (oppositeOrder.unfilledQty() === 0) {
+                // check opposite order
+                if (oppositeOrder.isFilled()) {
                     // Record order before deleting
                     await this.saveOrderRecord(oppositeOrder);
                     // if the other order is filled completely - remove it from the order book
@@ -530,9 +550,18 @@ export class OrderBook {
                 if (order.isFilled()) {
                     await this.saveOrderRecord(order);
                     await removeOrders(order);
+                    break;
+                } else {
+                    await this.updateActiveOrder(order);
+                    log(
+                        `⟁⟁⟁: UpdateActiveOrder oppositeOrder=${oppositeOrder.id} order${order.id}`
+                    );
                 }
+
+                // TODO break circle and repeat with other symbols
             }
         } else {
+            // Offers are empty
             // Initial order or something
             await order.save();
         }
