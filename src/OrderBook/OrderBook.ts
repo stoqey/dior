@@ -255,36 +255,41 @@ export class OrderBook {
             date: new Date(),
         });
 
+        const returnAndRefresh = async (ret: boolean): Promise<boolean> => {
+            await this.refresh();
+            return ret;
+        };
+
         console.log(order);
         if (order.qty <= minQty) {
             console.error(ErrInvalidQty);
             // check the qty
-            return false;
+            return await returnAndRefresh(false);
         }
 
         if (order.type === 'market' && order.price !== 0) {
             console.error(ErrInvalidMarketPrice);
-            return false;
+            return await returnAndRefresh(false);
         }
 
         if (order.type === 'limit' && order.price === 0) {
             console.error(ErrInvalidLimitPrice);
-            return false;
+            return await returnAndRefresh(false);
         }
 
         if (order.stop && order.stopPrice === 0) {
             console.error(ErrInvalidStopPrice);
-            return false;
+            return await returnAndRefresh(false);
         }
 
         const matched = await this.submit(order);
 
         if (!matched) {
             console.error(new Error('order has not been matched'));
-            return false;
+            return await returnAndRefresh(false);
         }
 
-        return matched;
+        return await returnAndRefresh(matched);
     }
 
     /**
