@@ -398,20 +398,20 @@ export class OrderBook {
                 const qty = this.min(order.unfilledQty(), oppositeOrder.unfilledQty());
 
                 // TODO Check AON
-                if (currentAON && qty != order.unfilledQty()) {
-                    log(
-                        `❌: couldn't find a match - we require AON but couldn't fill the order in one trade ${oppositeOrder.id}`
-                    );
-                    continue; // couldn't find a match - we require AON but couldn't fill the order in one trade
-                }
-                if (oppositeAON && qty != oppositeOrder.unfilledQty()) {
-                    log(
-                        `❌: couldn't find a match - other offer requires AON but our order can't fill it completely ${oppositeOrder.id}`
-                    );
-                    continue; // couldn't find a match - other offer requires AON but our order can't fill it completely
-                }
+                // if (currentAON && qty != order.unfilledQty()) {
+                //     log(
+                //         `❌: couldn't find a match - we require AON but couldn't fill the order in one trade ${oppositeOrder.id}`
+                //     );
+                //     continue; // couldn't find a match - we require AON but couldn't fill the order in one trade
+                // }
+                // if (oppositeAON && qty != oppositeOrder.unfilledQty()) {
+                //     log(
+                //         `❌: couldn't find a match - other offer requires AON but our order can't fill it completely ${oppositeOrder.id}`
+                //     );
+                //     continue; // couldn't find a match - other offer requires AON but our order can't fill it completely
+                // }
 
-                let price = 0;
+                let price = oppositeOrder.price;
 
                 /**
                  * Case orderType
@@ -443,7 +443,7 @@ export class OrderBook {
                 if (buying) {
                     // myPrice = 3.3, their ask is 3.10
                     if (oppositeOrder.type === 'limit') {
-                        if (myPrice >= oppositeOrder.price) {
+                        if (myPrice >= price) {
                             matched = oppositeOrder; // other prices are going to be even higher than our limit
                         }
 
@@ -465,6 +465,10 @@ export class OrderBook {
                             matched = oppositeOrder; // other prices are going to be even higher than our limit
                         }
                     }
+                }
+
+                if (!matched) {
+                    break;
                 }
 
                 // Check if enough qty before matching
@@ -529,13 +533,13 @@ export class OrderBook {
                 }
             }
         } else {
+            // Initial order or something
             await order.save();
-            // refresh
-            await this.refresh();
         }
 
         // If not matched save it still
         if (!matched) {
+            // TODO if order can be kept or is JUST noice
             await order.save();
         }
 
