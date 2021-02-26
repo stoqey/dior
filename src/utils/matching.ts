@@ -1,3 +1,4 @@
+import sum from 'lodash/sum';
 import {Order} from '../Order';
 import {Action} from '../shared';
 import {sortBuyOrders, sortSellOrders} from './orders';
@@ -63,10 +64,12 @@ export const matchOrder = (order: XOrder, market: XOrder[]): MatchResults => {
                 // e.g currentOffer = 20, my offer 10
 
                 if (myQtyIsFilled) {
+                    // offer.filledQty += qtyPromised; // update the offer with filled qty
+                    possibleMatches.push([offer, qtyPromised]);
+
                     // finish this order no need to get other
                     qtyPromised = 0;
-                    // offer.filledQty += qtyPromised; // update the offer with filled qty
-                    possibleMatches.push([offer, qtyRequired]);
+
                     console.log(`QTY FILLED FOR -----> MATCH: ${orderName}`);
                     break;
                 } else {
@@ -104,7 +107,7 @@ export const matchOrder = (order: XOrder, market: XOrder[]): MatchResults => {
     console.log('-------------------------');
     console.log(JSON.stringify(possibleMatches));
 
-    const totalFilled = possibleMatches.map((g) => g[1]).reduce((x, i = 0) => i + x);
+    const totalFilled = sum(possibleMatches.map((g) => g[1]));
 
     // Return value
     return {totalFilled, orders: possibleMatches};

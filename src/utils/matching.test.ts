@@ -43,29 +43,29 @@ const bearsMarket: XOrder[] = [
 
 describe('BEAR: The Matching Machine', () => {
     const market = [...bearsMarket];
-    // it('it should match slice BUY order', () => {
-    //     const order: XOrder = {
-    //         qty: 30,
-    //         action: 'BUY',
-    //         price: 3.21,
-    //     };
+    it('it should match slice BUY order', () => {
+        const order: XOrder = {
+            qty: 30,
+            action: 'BUY',
+            price: 3.21,
+        };
 
-    //     const matchedOrder = matchOrder(order, market);
+        const matchedOrder = matchOrder(order, market);
 
-    //     expect(matchedOrder.totalFilled).to.be.equal(order.qty);
-    // });
+        expect(matchedOrder.totalFilled).to.be.equal(order.qty);
+    });
 
-    // it('it should match partially a BUY order', () => {
-    //     const order: XOrder = {
-    //         qty: 200,
-    //         action: 'BUY',
-    //         price: 3.21,
-    //     };
+    it('it should match partially a BUY order', () => {
+        const order: XOrder = {
+            qty: 200,
+            action: 'BUY',
+            price: 3.21,
+        };
 
-    //     const matchedOrder = matchOrder(order, market);
+        const matchedOrder = matchOrder(order, market);
 
-    //     expect(matchedOrder.totalFilled).to.be.equal(order.qty / 2);
-    // });
+        expect(matchedOrder.totalFilled).to.be.equal(order.qty / 2);
+    });
 
     it('it should match a multiple a BUY order', () => {
         const order: XOrder = {
