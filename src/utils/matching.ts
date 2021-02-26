@@ -66,10 +66,8 @@ export const matchOrder = (order: XOrder, market: XOrder[]): MatchResults => {
                 if (myQtyIsFilled) {
                     // offer.filledQty += qtyPromised; // update the offer with filled qty
                     possibleMatches.push([offer, qtyPromised]);
-
                     // finish this order no need to get other
                     qtyPromised = 0;
-
                     console.log(`QTY FILLED FOR -----> MATCH: ${orderName}`);
                     break;
                 } else {
