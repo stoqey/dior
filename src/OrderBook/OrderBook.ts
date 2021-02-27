@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import includes from 'lodash/includes';
 import identity from 'lodash/identity';
 import pickBy from 'lodash/pickBy';
@@ -11,6 +12,7 @@ import {sortBuyOrders, sortSellOrders} from '../utils/orders';
 import {APPEVENTS, AppEvents} from '../events';
 import {log} from '../log';
 import {generateUUID, JSONDATA} from '../utils';
+import {matchOrder} from '../utils/matching';
 
 const minQty = 1;
 
@@ -345,38 +347,39 @@ export class OrderBook {
      * @param order Order
      */
     public async submit(order: Order): Promise<boolean> {
-        let matchOrder: {matched: Order; trade?: Trade} = null;
+        const isBuy = order.isBid();
 
         await this.refresh(); // refresh orders
 
-        if (order.isBid()) {
-            matchOrder = await this.matchOrder(order, this.asks);
-        } else {
-            matchOrder = await this.matchOrder(order, this.bids);
+        const {totalFilled, orders: totalOffers} = matchOrder(order, [...this.asks, ...this.bids]);
+
+        if (totalFilled > 0) {
+            // Let's settle these offers now
+            for (const offer of totalOffers) {
+                const [orderToSettle, qtyToSettle, priceToSettle] = offer;
+
+                const settledTrade = await this.settleOrder(
+                    // @ts-ignore
+                    isBuy ? orderToSettle : order, // seller, if is buying, then match is sell, else when selling match is buyer
+                    isBuy ? order : orderToSettle, // buyer
+                    qtyToSettle,
+                    priceToSettle
+                );
+
+                // TODO better logging
+                if (!settledTrade) {
+                    console.error('Order not settled', JSON.stringify(orderToSettle));
+                }
+            }
+            // Set marketPrice from here
+            const lastMatchedOrder = totalOffers[totalOffers.length - 1];
+            const lastMatchedOrderPrice = lastMatchedOrder[2];
+            await this.saveMarketPrice(lastMatchedOrderPrice);
+            log(`✅✅✅: Set market price ${lastMatchedOrderPrice}`);
+            return true;
         }
 
-        const addToBooks = !isEmpty(matchOrder.trade) ? true : false;
-
-        // const { matched , trade }  = matchOrder;
-
-        // if (!matched.isFilled()) {
-        //     if (order.params.includes(OrderParams.IOC)) {
-        //         await order.cancel(); // cancel the rest of the order
-        //         addToBooks = false; // don't add the order to the books (keep it stored but not active)
-        //         return;
-        //     }
-
-        //     if (!addToBooks) {
-        //         await this.addToBook(order, true); // store the order (in the books) and order is still active
-        //         return true;
-        //     }
-        // }
-
-        // if (order.isFilled() && addToBooks) {
-        //     await this.addToBook(order, false); // store the order (in the books), but not active
-        // }
-
-        return addToBooks;
+        return false;
     }
 
     min = (q1: number, q2: number): number => {
