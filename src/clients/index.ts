@@ -52,7 +52,7 @@ export async function clients(): Promise<boolean> {
 
         setInterval(() => {
             refreshCurrency();
-        }, 3000);
+        }, 2000);
 
         return true;
     } catch (error) {

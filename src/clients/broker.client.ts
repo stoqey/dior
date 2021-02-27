@@ -7,6 +7,7 @@ import {log} from '../log';
 import {Currency, CurrencyModel} from '../sofa/Currency';
 import {APPEVENTS, AppEvents} from '../events';
 import {OrderModal} from '../Order/Order.modal';
+import {OrderBook} from '../OrderBook/OrderBook';
 
 export const brokerClient = (app: nanoexpressApp): nanoexpressApp => {
     const events = AppEvents.Instance;
@@ -26,6 +27,8 @@ export const brokerClient = (app: nanoexpressApp): nanoexpressApp => {
             });
 
             log(`orders are ${orders && orders.length}`);
+
+            OrderBook._instance.refresh();
 
             return res.json({success: true, data: orders});
         } catch (error) {

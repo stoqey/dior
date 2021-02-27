@@ -68,7 +68,7 @@ export const refreshCurrency = async () => {
             ...currency,
             date: new Date(),
         };
-        verbose(`${instrument}: Close${dataToSend.close}`);
+        // verbose(`${instrument}: Close${dataToSend.close}`);
         currencySingleton.setCurrency(dataToSend);
         events.emit(APPEVENTS.STQ_QUOTE, dataToSend); // quote the current quote
     } catch (error) {
