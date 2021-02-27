@@ -299,6 +299,48 @@ export class OrderBook {
     }
 
     /**
+     * Execute matched order
+     * Create trade
+     * settleOrder
+     */
+    public async settleOrder(
+        seller: Order,
+        buyer: Order,
+        qty: number,
+        price: number
+    ): Promise<Trade> {
+        try {
+            const sellerId = seller.clientId;
+            const askOrderId = seller.id;
+            const buyerId = buyer.clientId;
+            const bidOrderId = buyer.id;
+
+            // TODO add action to trade
+            const newTrade = new Trade({
+                id: generateUUID(),
+                buyer: buyerId,
+                seller: sellerId,
+                instrument: buyer.instrument,
+                qty,
+                price,
+                date: new Date(),
+                bidOrderId: bidOrderId,
+                askOrderId: askOrderId,
+            });
+
+            // Enter trade
+            await this.tradeBook.enter(newTrade);
+
+            // TODO events about settlement
+
+            return newTrade;
+        } catch (e) {
+            console.error('error settling order');
+            return null;
+        }
+    }
+
+    /**
      * submit
      * @param order Order
      */
