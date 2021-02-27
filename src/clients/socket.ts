@@ -27,7 +27,7 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
                     event: APPEVENTS.STQ_ORDERS,
                     data,
                 };
-                console.log(
+                verbose(
                     'ws/stq -> res.connection => nrp.on -> APPEVENTS.STQ_ORDERS',
                     data && data.length
                 );
@@ -44,7 +44,7 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
 
             const handleStqQuote = function (data: any) {
                 data.event = APPEVENTS.STQ_QUOTE;
-                console.log(
+                verbose(
                     'ws/stq -> res.connection => nrp.on -> APPEVENTS.STQ_QUOTE',
                     data && data.close
                 );
@@ -55,7 +55,7 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
             // update, cancel, complete order
             const handleUpdateOrder = function (data: any) {
                 data.event = APPEVENTS.UPDATE_ORDER;
-                console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.UPDATE_ORDER');
+                log('ws/stq -> res.connection => nrp.on -> APPEVENTS.UPDATE_ORDER');
                 ws.send(JSON.stringify(data));
             };
             events.on(APPEVENTS.UPDATE_ORDER, handleUpdateOrder);
@@ -66,14 +66,14 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
                     event: APPEVENTS.CANCEL_ORDER,
                 };
 
-                console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.CANCEL_ORDER', data);
+                log('ws/stq -> res.connection => nrp.on -> APPEVENTS.CANCEL_ORDER', data);
                 ws.send(JSON.stringify(data));
             };
             events.on(APPEVENTS.CANCEL_ORDER, handleCancelOrder);
 
             const handleCompleteOrder = function (data: any) {
                 data.event = APPEVENTS.COMPLETE_ORDER;
-                console.log('ws/stq -> res.connection => nrp.on -> APPEVENTS.COMPLETE_ORDER', data);
+                log('ws/stq -> res.connection => nrp.on -> APPEVENTS.COMPLETE_ORDER', data);
                 ws.send(JSON.stringify(data));
             };
             events.on(APPEVENTS.COMPLETE_ORDER, handleCompleteOrder);
@@ -98,9 +98,9 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
                             events.emit(APPEVENTS.CANCEL, dataReceived);
                         }
 
-                        if (typ === APPEVENTS.GET_STQ_ORDERS) {
-                            events.emit(APPEVENTS.GET_STQ_ORDERS, null);
-                        }
+                        // if (typ === APPEVENTS.GET_STQ_ORDERS) {
+                        //     events.emit(APPEVENTS.GET_STQ_ORDERS, null);
+                        // }
                         // check data types from here
                     }
                 } catch (error) {

@@ -50,9 +50,9 @@ export async function clients(): Promise<boolean> {
 
         log(`Started ${appName} on ${PORT}`);
 
-        setInterval(() => {
-            refreshCurrency();
-        }, 2000);
+        // setInterval(() => {
+        //     refreshCurrency();
+        // }, 2000);
 
         return true;
     } catch (error) {

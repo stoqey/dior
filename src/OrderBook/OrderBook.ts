@@ -7,7 +7,7 @@ import {Order, OrderParams, OrderTracker} from '../Order';
 import {TradeBook} from '../TradeBook';
 import {Trade} from '../Trade';
 import {getAllOrders, OrderModal, OrderRecordModal} from '../Order/Order.modal';
-import {Currency, CurrencyModel} from '../sofa/Currency';
+import {Currency, CurrencyModel, CurrencySingleton} from '../sofa/Currency';
 import {sortBuyOrders, sortSellOrders} from '../utils/orders';
 import {APPEVENTS, AppEvents} from '../events';
 import {log} from '../log';
@@ -24,6 +24,7 @@ const ErrInvalidStopPrice = new Error('stop price has to be set for a stop order
 export class OrderBook {
     instrument: string;
     marketPrice: number;
+    currency: Currency;
     tradeBook: TradeBook;
     orderModal: typeof OrderModal;
     activeOrders: Order[] = [];
@@ -147,6 +148,7 @@ export class OrderBook {
 
         // Set it to this local
         this.marketPrice = thisCurrency.close;
+        this.currency = thisCurrency;
     }
 
     /**
@@ -205,7 +207,6 @@ export class OrderBook {
      * refresh
      */
     public async refresh() {
-        const events = AppEvents.Instance;
         // Get all trades
         // Sort buys
         // Sort sells
@@ -276,8 +277,21 @@ export class OrderBook {
                 );
             }
         };
+
+        const emitQuoteToAll = () => {
+            const currency = this.currency;
+            if (currency) {
+                const dataToSend: Currency = {
+                    ...currency,
+                    date: new Date(),
+                };
+                CurrencySingleton.app.setCurrency(dataToSend);
+                events.emit(APPEVENTS.STQ_QUOTE, dataToSend); // quote the current quote
+            }
+        };
         setInterval(() => {
             emitAllOrders();
+            emitQuoteToAll();
         }, 1000);
     }
 
