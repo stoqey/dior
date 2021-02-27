@@ -1,3 +1,4 @@
+import {isEmpty} from 'lodash';
 import sum from 'lodash/sum';
 import {Order} from '../Order';
 import {Action, OrderType} from '../shared';
@@ -5,7 +6,7 @@ import {sortBuyOrders, sortSellOrders} from './orders';
 
 export interface XOrder {
     qty: number;
-    price: number;
+    price?: number;
     action: Action;
     date?: Date;
     type?: OrderType;
@@ -27,16 +28,23 @@ export const matchOrder = (order: XOrder, market: XOrder[]): MatchResults => {
     const orderType = order.type || 'limit';
     const isLimitOrder = orderType === 'limit';
 
-    // TODO Match 2 opposite orders
-    const offers = market.filter((i) =>
-        isBuying
-            ? i.action === 'SELL'
-            : i.action === 'BUY' && orderType === 'market' // if it's marketType remove all opposite market orders
-            ? i.type === 'limit'
-            : i.type
-    );
+    let offers = market.filter((i) => (isBuying ? i.action === 'SELL' : i.action === 'BUY'));
+
+    if (!isLimitOrder) {
+        // TODO Match 2 opposite market orders
+        offers = offers.filter((i) => i.type !== 'market');
+        // Only limit orders, remove opposite market orders
+    }
 
     const sortedOffers: XOrder[] = offers.sort(isBuying ? sortSellOrders : sortBuyOrders);
+
+    // If offers are empty
+    if (isEmpty(sortedOffers)) {
+        return {
+            totalFilled: 0,
+            orders: [],
+        };
+    }
 
     const orderName = `${order.action.toLocaleUpperCase()} @${order.price}`;
     const orderPrice = order.price;
