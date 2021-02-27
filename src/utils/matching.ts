@@ -12,7 +12,9 @@ export interface XOrder {
     type?: OrderType;
 }
 
-type PossibleMatch = [XOrder, number];
+type OORDER = XOrder | Order;
+
+type PossibleMatch = [OORDER, number];
 
 interface MatchResults {
     totalFilled: number;
@@ -22,7 +24,7 @@ interface MatchResults {
  * Match order
  * order, offers
  */
-export const matchOrder = (order: XOrder, market: XOrder[]): MatchResults => {
+export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
     const isBuying = order.action === 'BUY';
 
     const orderType = order.type || 'limit';
