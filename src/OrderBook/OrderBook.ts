@@ -455,7 +455,9 @@ export class OrderBook {
      */
     public async submit(order: Order): Promise<boolean> {
         const isBuy = order.isBid();
+        const orderQty = order.qty;
 
+        // TODO locking currency
         // await this.refresh(); // refresh orders
 
         const {totalFilled, orders: totalOffers} = matchOrder(order, [...this.asks, ...this.bids]);
@@ -485,6 +487,9 @@ export class OrderBook {
                     continue;
                 }
 
+                // update settledAmount
+                totalSettledQty += qtyToSettle;
+
                 if (isBuy) {
                     // Opposite is sell
                     // Settle the seller
@@ -496,24 +501,28 @@ export class OrderBook {
                     // @ts-ignore
                     await this.updateOrderWithFilled(buyer, qtyToSettle);
                 }
-
-                // update settledAmount
-                totalSettledQty += qtyToSettle;
             }
 
-            /**
-             * Update currentOrder with filled
-             */
-            await this.updateOrderWithFilled(order, totalSettledQty);
+            log(
+                `⏭⏭⏭⏭: totalSettledQty totalSettledQty totalSettledQty totalSettledQty ${totalSettledQty}`
+            );
+
+            // Update order after
+            // No need to delete this order it won't exit in orderbook, just a record of it is need
+            if (orderQty !== totalSettledQty) {
+                // create or update this order
+                order.filledQty += totalSettledQty; // update filled
+                await this.orderModal.save(order); // update or create order
+            }
 
             // Set marketPrice from here
             const lastMatchedOrder = totalOffers[totalOffers.length - 1];
             const lastMatchedOrderPrice = lastMatchedOrder[2];
             await this.saveMarketPrice(lastMatchedOrderPrice);
             log(`✅✅✅: Set market price ${lastMatchedOrderPrice}`);
-            return true;
         } else {
             // Order has not been filled just save it in orderBook
+            // TODO Check if it's a noise offer
             order.save();
         }
 
