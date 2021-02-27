@@ -211,10 +211,6 @@ export class OrderBook {
         // Set active, bids, and asks
         let allOrders: Order[] = await getAllOrders(); // all orders, not trackers
 
-        // emit that we have new fresh orders
-        // TODO rate limiter
-        events.emit(APPEVENTS.STQ_ORDERS, allOrders);
-
         allOrders = allOrders.map(
             (o) =>
                 new Order({
@@ -222,11 +218,39 @@ export class OrderBook {
                 })
         );
 
+        // Clean orders
+        // Orders with noise, or already filledOrders
+        // TODO orders that are far fetch, or orders that cannot be used, useless orders
+        const ordersToClean = [...allOrders].filter((i) => i.qty - i.filledQty <= 0);
+        if (!isEmpty(ordersToClean)) {
+            log(
+                `ORDERS TO CLEAN --------------> ${JSON.stringify(
+                    ordersToClean.map((i) => `${i.qty - i.filledQty}`)
+                )}`
+            );
+
+            // remove these orders
+            // for (const o of ordersToClean) {
+            //     await o.cancel();
+            // }
+            // Add to clean bed
+        }
+
+        // Clean orders
+        allOrders = allOrders.filter((i) => !i.isFilled());
+
+        // emit that we have new fresh orders
+        // TODO rate limiter
+
         log(`✅: allOrders:Orders ${allOrders && allOrders.length}`);
         if (!isEmpty(allOrders)) {
             this.activeOrders = allOrders.filter((i) => i.workedOn !== null); // all orders with locks
             this.bids = allOrders.filter((i) => i.action === 'BUY').sort(sortBuyOrders);
             this.asks = allOrders.filter((i) => i.action === 'SELL').sort(sortSellOrders);
+            events.emit(
+                APPEVENTS.STQ_ORDERS,
+                allOrders.map((i) => i.json())
+            );
         }
 
         log(`✅: Active:Orders ${this.activeOrders && this.activeOrders.length}`);
@@ -371,7 +395,7 @@ export class OrderBook {
     public async submit(order: Order): Promise<boolean> {
         const isBuy = order.isBid();
 
-        await this.refresh(); // refresh orders
+        // await this.refresh(); // refresh orders
 
         const {totalFilled, orders: totalOffers} = matchOrder(order, [...this.asks, ...this.bids]);
 

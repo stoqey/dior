@@ -13,17 +13,6 @@ interface Imessage {
 
 export const socketClient = (app: nanoexpress.nanoexpressApp) => {
     const events = AppEvents.Instance;
-    // events.on(APPEVENTS.ADD_ORDER, function (data: any) {
-    //     console.log(TOPICS.STQ_quote, data);
-
-    //     let parsedData = data;
-
-    //     if (typeof data === 'object') {
-    //         parsedData = JSON.stringify(data);
-    //     }
-
-    //     // redisClient.set(TOPICS.STQ_quote, parsedData);
-    // });
 
     // @ts-ignore
     app.ws('/', (_req, res) => {
@@ -109,9 +98,9 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
                             events.emit(APPEVENTS.CANCEL, dataReceived);
                         }
 
-                        if (typ === APPEVENTS.GET_STQ_ORDERS) {
-                            events.emit(APPEVENTS.GET_STQ_ORDERS, null);
-                        }
+                        // if (typ === APPEVENTS.GET_STQ_ORDERS) {
+                        //     events.emit(APPEVENTS.GET_STQ_ORDERS, null);
+                        // }
                         // check data types from here
                     }
                 } catch (error) {
@@ -124,6 +113,7 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
                 // update order
                 // console.log('Message received', msg);
                 // ws.send(msg);
+                events.emit(APPEVENTS.GET_STQ_ORDERS, null);
             });
 
             ws.on('close', (code, message) => {
