@@ -93,6 +93,8 @@ export class OrderBook {
             await this.refresh();
 
             this.bindEventsToOrderBook(); // bind orderbook events
+
+            this.heartbeat();
         } catch (error) {
             console.error(error);
             throw error;
@@ -247,15 +249,36 @@ export class OrderBook {
             this.activeOrders = allOrders.filter((i) => i.workedOn !== null); // all orders with locks
             this.bids = allOrders.filter((i) => i.action === 'BUY').sort(sortBuyOrders);
             this.asks = allOrders.filter((i) => i.action === 'SELL').sort(sortSellOrders);
-            events.emit(
-                APPEVENTS.STQ_ORDERS,
-                allOrders.map((i) => i.json())
-            );
+            // events.emit(
+            //     APPEVENTS.STQ_ORDERS,
+            //     allOrders.map((i) => i.json())
+            // );
         }
 
-        log(`✅: Active:Orders ${this.activeOrders && this.activeOrders.length}`);
+        // log(`✅: Active:Orders ${this.activeOrders && this.activeOrders.length}`);
         log(`✅: Bids:Orders ${this.bids && this.bids.length}`);
         log(`✅: Asks:Orders ${this.asks && this.asks.length}`);
+    }
+
+    /**
+     * this functions runs everysecond to emit how many orders we have
+     * notifyOrders
+     */
+    public heartbeat() {
+        const events = AppEvents.Instance;
+        const emitAllOrders = () => {
+            const allOrders = [...this.bids, ...this.asks];
+
+            if (!isEmpty(allOrders)) {
+                events.emit(
+                    APPEVENTS.STQ_ORDERS,
+                    allOrders.map((i) => i.json())
+                );
+            }
+        };
+        setInterval(() => {
+            emitAllOrders();
+        }, 1000);
     }
 
     /**
