@@ -161,7 +161,7 @@ export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
     console.log(`RequiredQTY=${qtyRequired}`);
     console.log(`CollectedQTY=${qtyPromised}`);
     console.log('-------------------------');
-    console.log(JSON.stringify(possibleMatches));
+    // console.log(JSON.stringify(possibleMatches));
 
     const totalFilled = sum(possibleMatches.map((g) => g[1]));
 
