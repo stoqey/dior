@@ -191,7 +191,11 @@ export class OrderBook {
      * updateActiveOrder
      * @param order Order
      */
-    public async updateActiveOrder(order: Order) {}
+    public async updateActiveOrder(order: Order) {
+        // set workedOn field
+        try {
+        } catch (error) {}
+    }
 
     /**
      * refresh
@@ -248,6 +252,8 @@ export class OrderBook {
      */
     public async add(currentOrder: Order): Promise<boolean> {
         console.log('current order', JSON.stringify(currentOrder));
+
+        // TODO if order can be kept or is JUST noise
         const orderId = generateUUID();
         const order: Order = new Order({
             ...currentOrder,
@@ -255,36 +261,41 @@ export class OrderBook {
             date: new Date(),
         });
 
+        const returnAndRefresh = async (ret: boolean): Promise<boolean> => {
+            await this.refresh();
+            return ret;
+        };
+
         console.log(order);
-        if (order.qty <= minQty) {
+        if (order.qty < minQty) {
             console.error(ErrInvalidQty);
             // check the qty
-            return false;
+            return await returnAndRefresh(false);
         }
 
         if (order.type === 'market' && order.price !== 0) {
             console.error(ErrInvalidMarketPrice);
-            return false;
+            return await returnAndRefresh(false);
         }
 
         if (order.type === 'limit' && order.price === 0) {
             console.error(ErrInvalidLimitPrice);
-            return false;
+            return await returnAndRefresh(false);
         }
 
         if (order.stop && order.stopPrice === 0) {
             console.error(ErrInvalidStopPrice);
-            return false;
+            return await returnAndRefresh(false);
         }
 
         const matched = await this.submit(order);
 
         if (!matched) {
             console.error(new Error('order has not been matched'));
-            return false;
+            return await returnAndRefresh(false);
         }
 
-        return matched;
+        return await returnAndRefresh(matched);
     }
 
     /**
@@ -379,7 +390,7 @@ export class OrderBook {
             for (const offer of offers) {
                 const oppositeOrder = offer;
 
-                const oppositeAON = oppositeOrder.params;
+                // const oppositeAON = oppositeOrder.params;
                 if (await oppositeOrder.isCancelled()) {
                     log(`❌: Canceled for isCancelled`);
                     await oppositeOrder.cancel(); // mark order for removal
@@ -388,21 +399,27 @@ export class OrderBook {
 
                 const qty = this.min(order.unfilledQty(), oppositeOrder.unfilledQty());
 
-                // TODO Check AON
-                if (currentAON && qty != order.unfilledQty()) {
-                    log(
-                        `❌: couldn't find a match - we require AON but couldn't fill the order in one trade ${oppositeOrder.id}`
-                    );
-                    continue; // couldn't find a match - we require AON but couldn't fill the order in one trade
-                }
-                if (oppositeAON && qty != oppositeOrder.unfilledQty()) {
-                    log(
-                        `❌: couldn't find a match - other offer requires AON but our order can't fill it completely ${oppositeOrder.id}`
-                    );
-                    continue; // couldn't find a match - other offer requires AON but our order can't fill it completely
-                }
+                const orderQty = order.unfilledQty();
+                const oppositeQty = oppositeOrder.unfilledQty();
+                const smallestQty = this.min(orderQty, oppositeQty);
 
-                let price = 0;
+                // const currentOrderToBeFilled = smallestQty === orderQty;
+                const currentOppOrderToBeFilled = smallestQty === oppositeQty;
+                const currentAndOppAreEvenlyFilled = orderQty === oppositeQty;
+
+                // TODO Check AON
+                // if (currentAON && qty != order.unfilledQty()) {
+                //     log(
+                //         `❌: couldn't find a match - we require AON but couldn't fill the order in one trade ${oppositeOrder.id}`
+                //     );
+                //     continue; // couldn't find a match - we require AON but couldn't fill the order in one trade
+                // }
+                // if (oppositeAON && qty != oppositeOrder.unfilledQty()) {
+                //     log(
+                //         `❌: couldn't find a match - other offer requires AON but our order can't fill it completely ${oppositeOrder.id}`
+                //     );
+                //     continue; // couldn't find a match - other offer requires AON but our order can't fill it completely
+                // }
 
                 /**
                  * Case orderType
@@ -418,42 +435,61 @@ export class OrderBook {
                     continue; // two opposing market orders are usually forbidden (rejected) - continue matching
                 }
 
-                if (oppositeOrder.type === 'limit') {
-                    price = oppositeOrder.price; // crossing the spread
-                }
-
                 /**
                  * Case typeLimit
                  */
 
                 const myPrice = order.price;
+                const oppoPrice = oppositeOrder.price;
+                let price = null;
+
+                // if (oppositeOrder.type === 'limit') {
+                //     price = oppositeOrder.price; // crossing the spread
+                // }
+
+                // TODO for market orders
+                // TODO for
 
                 if (buying) {
+                    // myPrice = 3.3, their ask is 3.10
                     if (oppositeOrder.type === 'limit') {
-                        if (myPrice < oppositeOrder.price) {
+                        if (myPrice >= oppoPrice) {
                             matched = oppositeOrder; // other prices are going to be even higher than our limit
-                            break;
-                        } else {
-                            // our bid is higher or equal to their ask - set price to myPrice
-                            price = myPrice; // e.g. our bid is $20.10, their ask is $20 - trade executes at $20.10
                         }
+
+                        // if (myPrice <= oppositeOrder.price) {
+                        //     matched = oppositeOrder; // other prices are going to be even higher than our limit
+                        //     break;
+                        // } else {
+                        //     // our bid is higher or equal to their ask - set price to myPrice
+                        //     price = myPrice; // e.g. our bid is $20.10, their ask is $20 - trade executes at $20.10
+                        // }
                     } else {
-                        // we have a limit, they are selling at our price
-                        price = myPrice;
+                        // For market matching
+                        price = oppoPrice;
+                        matched = oppositeOrder;
                     }
                 } else {
                     // we're selling
                     if (oppositeOrder.type === 'limit') {
-                        if (myPrice > oppositeOrder.price) {
-                            // we can't match since our ask is higher than the best bid
-                            break;
-                        } else {
-                            price = oppositeOrder.price; // set price to their bid
+                        if (myPrice <= oppositeOrder.price) {
+                            // price = oppositeOrder.price; // set price to their bid
+                            matched = oppositeOrder; // other prices are going to be even higher than our limit
                         }
                     } else {
-                        price = myPrice;
+                        // For market matching
+                        price = oppoPrice;
+                        matched = oppositeOrder;
                     }
                 }
+
+                if (!matched) {
+                    break;
+                }
+
+                // Check if enough qty before matching
+                // Check if matched or not
+                // Matching order here begins
 
                 if (buying) {
                     seller = oppositeOrder.clientId;
@@ -463,9 +499,13 @@ export class OrderBook {
                     bidOrderId = oppositeOrder.id;
                 }
 
+                const currentOrderToBeFilled = smallestQty === orderQty;
+                // const currentOppOrderToBeFilled = smallestQty === oppositeQty;
+
                 order.filledQty += qty;
                 oppositeOrder.filledQty += qty;
 
+                // TODO add action to trade
                 const newTrade = new Trade({
                     id: generateUUID(),
                     buyer,
@@ -483,17 +523,17 @@ export class OrderBook {
                 // Enter trade
                 await this.tradeBook.enter(newTrade);
 
+                if (currentOrderToBeFilled) {
+                    price = oppositeOrder.price;
+                }
                 // update currency object
                 await this.saveMarketPrice(price);
                 log(`✅✅✅: Set market price ${price}`);
 
-                matched = oppositeOrder;
-
                 log(`💩💩💩💩: MatchedOrderId=${matched.id} order${order.id}`);
 
-                // Add to orderbook, or create trade
-
-                if (oppositeOrder.unfilledQty() === 0) {
+                // check opposite order
+                if (oppositeOrder.isFilled()) {
                     // Record order before deleting
                     await this.saveOrderRecord(oppositeOrder);
                     // if the other order is filled completely - remove it from the order book
@@ -510,16 +550,25 @@ export class OrderBook {
                 if (order.isFilled()) {
                     await this.saveOrderRecord(order);
                     await removeOrders(order);
+                    break;
+                } else {
+                    await this.updateActiveOrder(order);
+                    log(
+                        `⟁⟁⟁: UpdateActiveOrder oppositeOrder=${oppositeOrder.id} order${order.id}`
+                    );
                 }
+
+                // TODO break circle and repeat with other symbols
             }
         } else {
+            // Offers are empty
+            // Initial order or something
             await order.save();
-            // refresh
-            await this.refresh();
         }
 
         // If not matched save it still
         if (!matched) {
+            // TODO if order can be kept or is JUST noice
             await order.save();
         }
 
