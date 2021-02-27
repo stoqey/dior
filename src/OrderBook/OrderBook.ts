@@ -207,6 +207,9 @@ export class OrderBook {
      * refresh
      */
     public async refresh() {
+        let bids = [];
+        let asks = [];
+        let activeOrders = [];
         // Get all trades
         // Sort buys
         // Sort sells
@@ -247,18 +250,35 @@ export class OrderBook {
 
         log(`✅: allOrders:Orders ${allOrders && allOrders.length}`);
         if (!isEmpty(allOrders)) {
-            this.activeOrders = allOrders.filter((i) => i.workedOn !== null); // all orders with locks
-            this.bids = allOrders.filter((i) => i.action === 'BUY').sort(sortBuyOrders);
-            this.asks = allOrders.filter((i) => i.action === 'SELL').sort(sortSellOrders);
-            // events.emit(
-            //     APPEVENTS.STQ_ORDERS,
-            //     allOrders.map((i) => i.json())
-            // );
+            activeOrders = allOrders.filter((i) => i.workedOn !== null); // all orders with locks
+            bids = allOrders.filter((i) => i.action === 'BUY').sort(sortBuyOrders);
+            asks = allOrders.filter((i) => i.action === 'SELL').sort(sortSellOrders);
+
+            this.activeOrders = activeOrders;
+            this.bids = bids;
+            this.asks = asks;
         }
 
         // log(`✅: Active:Orders ${this.activeOrders && this.activeOrders.length}`);
-        log(`✅: Bids:Orders ${this.bids && this.bids.length}`);
-        log(`✅: Asks:Orders ${this.asks && this.asks.length}`);
+        log(
+            `💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵`
+        );
+        log(
+            `💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵`
+        );
+        log(
+            `💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵`
+        );
+        log(`         BIDS: ${bids && bids.length}         :         ASKS:${asks && asks.length}`);
+        log(
+            `💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵`
+        );
+        log(
+            `💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵`
+        );
+        log(
+            `💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵💵`
+        );
     }
 
     /**
@@ -293,6 +313,10 @@ export class OrderBook {
             emitAllOrders();
             emitQuoteToAll();
         }, 1000);
+
+        setInterval(() => {
+            this.refresh();
+        }, 3000);
     }
 
     /**
@@ -314,7 +338,7 @@ export class OrderBook {
      * @param currentOrder Order
      */
     public async add(currentOrder: Order): Promise<boolean> {
-        console.log('current order', JSON.stringify(currentOrder));
+        log('current order', JSON.stringify(currentOrder));
 
         // TODO if order can be kept or is JUST noise
         const orderId = generateUUID();
@@ -488,8 +512,11 @@ export class OrderBook {
             await this.saveMarketPrice(lastMatchedOrderPrice);
             log(`✅✅✅: Set market price ${lastMatchedOrderPrice}`);
             return true;
+        } else {
+            // Order has not been filled just save it in orderBook
+            order.save();
         }
 
-        return false;
+        return true;
     }
 }
