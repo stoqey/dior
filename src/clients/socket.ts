@@ -98,9 +98,9 @@ export const socketClient = (app: nanoexpress.nanoexpressApp) => {
                             events.emit(APPEVENTS.CANCEL, dataReceived);
                         }
 
-                        // if (typ === APPEVENTS.GET_STQ_ORDERS) {
-                        //     events.emit(APPEVENTS.GET_STQ_ORDERS, null);
-                        // }
+                        if (typ === APPEVENTS.GET_STQ_ORDERS) {
+                            events.emit(APPEVENTS.GET_STQ_ORDERS, null);
+                        }
                         // check data types from here
                     }
                 } catch (error) {
