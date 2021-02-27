@@ -1,16 +1,20 @@
+import {isEmpty} from 'lodash';
 import sum from 'lodash/sum';
 import {Order} from '../Order';
-import {Action} from '../shared';
+import {Action, OrderType} from '../shared';
 import {sortBuyOrders, sortSellOrders} from './orders';
 
 export interface XOrder {
     qty: number;
-    price: number;
+    price?: number;
     action: Action;
     date?: Date;
+    type?: OrderType;
 }
 
-type PossibleMatch = [XOrder, number];
+type OORDER = XOrder | Order;
+
+type PossibleMatch = [OORDER, number];
 
 interface MatchResults {
     totalFilled: number;
@@ -20,11 +24,29 @@ interface MatchResults {
  * Match order
  * order, offers
  */
-export const matchOrder = (order: XOrder, market: XOrder[]): MatchResults => {
+export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
     const isBuying = order.action === 'BUY';
 
-    const offers = market.filter((i) => (isBuying ? i.action === 'SELL' : i.action === 'BUY'));
+    const orderType = order.type || 'limit';
+    const isLimitOrder = orderType === 'limit';
+
+    let offers = market.filter((i) => (isBuying ? i.action === 'SELL' : i.action === 'BUY'));
+
+    if (!isLimitOrder) {
+        // TODO Match 2 opposite market orders
+        offers = offers.filter((i) => i.type !== 'market');
+        // Only limit orders, remove opposite market orders
+    }
+
     const sortedOffers: XOrder[] = offers.sort(isBuying ? sortSellOrders : sortBuyOrders);
+
+    // If offers are empty
+    if (isEmpty(sortedOffers)) {
+        return {
+            totalFilled: 0,
+            orders: [],
+        };
+    }
 
     const orderName = `${order.action.toLocaleUpperCase()} @${order.price}`;
     const orderPrice = order.price;
@@ -54,15 +76,67 @@ export const matchOrder = (order: XOrder, market: XOrder[]): MatchResults => {
         // Check if can be matched
         // TODO market price
 
+        const myQtyIsFilled = qtyPromised <= currentOfferQty;
+
         // for limit price
         if (isBuying) {
             // For buying
-            const myQtyIsFilled = qtyPromised <= currentOfferQty;
 
-            // Matched limit price
-            if (orderPrice >= currentOfferPrice) {
-                // e.g currentOffer = 20, my offer 10
+            if (isLimitOrder) {
+                // Limit order here price
+                if (orderPrice >= currentOfferPrice) {
+                    // e.g currentOffer = 20, my offer 10
 
+                    if (myQtyIsFilled) {
+                        // offer.filledQty += qtyPromised; // update the offer with filled qty
+                        possibleMatches.push([offer, qtyPromised]);
+                        // finish this order no need to get other
+                        qtyPromised = 0;
+                        console.log(`QTY FILLED FOR -----> MATCH: ${orderName}`);
+                        break;
+                    } else {
+                        // reduce qtyPromised
+                        qtyPromised -= currentOfferQty;
+                        possibleMatches.push([offer, currentOfferQty]); // add to possible offers
+                        console.log(`QTY PARTIALLY FILLED FOR -----> MATCH: ${orderName}`);
+                    }
+                }
+            } else {
+                // Market order here
+                if (myQtyIsFilled) {
+                    // offer.filledQty += qtyPromised; // update the offer with filled qty
+                    possibleMatches.push([offer, qtyPromised]);
+                    // finish this order no need to get other
+                    qtyPromised = 0;
+                    console.log(`QTY FILLED FOR -----> MATCH: ${orderName}`);
+                    break;
+                } else {
+                    // reduce qtyPromised
+                    qtyPromised -= currentOfferQty;
+                    possibleMatches.push([offer, currentOfferQty]); // add to possible offers
+                    console.log(`QTY PARTIALLY FILLED FOR -----> MATCH: ${orderName}`);
+                }
+            }
+        } else {
+            if (isLimitOrder) {
+                // Limit Order
+                if (orderPrice <= currentOfferPrice) {
+                    if (myQtyIsFilled) {
+                        // offer.filledQty += qtyPromised; // update the offer with filled qty
+                        possibleMatches.push([offer, qtyPromised]);
+                        // finish this order no need to get other
+                        qtyPromised = 0;
+                        console.log(`QTY FILLED FOR -----> MATCH: ${orderName}`);
+                        break;
+                    } else {
+                        // reduce qtyPromised
+                        qtyPromised -= currentOfferQty;
+                        possibleMatches.push([offer, currentOfferQty]); // add to possible offers
+                        console.log(`QTY PARTIALLY FILLED FOR -----> MATCH: ${orderName}`);
+                    }
+                }
+            } else {
+                // Market Orders
                 if (myQtyIsFilled) {
                     // offer.filledQty += qtyPromised; // update the offer with filled qty
                     possibleMatches.push([offer, qtyPromised]);
@@ -78,26 +152,6 @@ export const matchOrder = (order: XOrder, market: XOrder[]): MatchResults => {
                 }
             }
         }
-        // else {
-        //     // for selling
-        //     const myQtyIsFilled = qtyPromised >= currentOfferQty;
-
-        //     // Matched limit price
-        //     if (orderPrice <= currentOfferPrice) {
-        //         if (myQtyIsFilled) {
-        //             // finish this order no need to get other
-        //             qtyPromised -= qtyPromised;
-        //             // offer.filledQty += qtyPromised; // update the offer with filled qty
-        //             possibleMatches.push([offer, qtyPromised]);
-        //             return;
-        //         } else {
-        //             // reduce qtyPromised
-        //             qtyPromised -= currentOfferQty;
-        //             possibleMatches.push([offer, currentOfferQty]); // add to possible offers
-        //             return;
-        //         }
-        //     }
-        // }
     }
 
     console.log(`RequiredQTY=${qtyRequired}`);
