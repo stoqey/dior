@@ -212,8 +212,8 @@ export class Order implements OrderObject {
 
             throw new Error('error canceling order');
         } catch (error) {
-            console.error(error);
-            return error;
+            console.error('error canceling order', error);
+            return false;
         }
     }
 

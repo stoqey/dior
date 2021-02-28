@@ -490,18 +490,23 @@ export class OrderBook {
                 // update settledAmount
                 totalSettledQty += qtyToSettle;
 
-                if (isBuy) {
-                    // Opposite is sell
-                    // Settle the seller
+                if (orderToSettle.qty <= qtyToSettle) {
                     // @ts-ignore
-                    await this.updateOrderWithFilled(seller, qtyToSettle);
+                    // Close this opposite order
+                    // Record order before deleting
+                    await this.saveOrderRecord(orderToSettle);
+                    // await order.cancel();
                 } else {
-                    // Opposite is the buyer
-                    // Settle the buy
                     // @ts-ignore
-                    await this.updateOrderWithFilled(buyer, qtyToSettle);
+                    //  Save it
+                    // create or update this order
+                    orderToSettle.filledQty += qtyToSettle; // update filled
+                    // @ts-ignore
+                    await this.orderModal.save(orderToSettle); // update or create order
                 }
             }
+
+            // END For loop
 
             log(
                 `⏭⏭⏭⏭: totalSettledQty totalSettledQty totalSettledQty totalSettledQty ${totalSettledQty}`
@@ -512,7 +517,11 @@ export class OrderBook {
             if (orderQty !== totalSettledQty) {
                 // create or update this order
                 order.filledQty += totalSettledQty; // update filled
-                await this.orderModal.save(order); // update or create order
+                await this.orderModal.create(order); // update or create order
+            } else {
+                // delete order it's been cleared
+                await this.saveOrderRecord(order);
+                // await order.cancel();
             }
 
             // Set marketPrice from here
@@ -523,7 +532,7 @@ export class OrderBook {
         } else {
             // Order has not been filled just save it in orderBook
             // TODO Check if it's a noise offer
-            order.save();
+            await this.orderModal.save(order); // update or create order
         }
 
         return true;

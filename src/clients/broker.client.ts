@@ -28,7 +28,7 @@ export const brokerClient = (app: nanoexpressApp): nanoexpressApp => {
 
             log(`orders are ${orders && orders.length}`);
 
-            OrderBook._instance.refresh();
+            OrderBook.app.refresh();
 
             return res.json({success: true, data: orders});
         } catch (error) {
