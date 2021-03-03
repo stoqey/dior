@@ -452,7 +452,10 @@ export class OrderBook {
         // TODO locking currency
         // await this.refresh(); // refresh orders
 
-        const {totalFilled, orders: totalOffers} = matchOrder(order, [...this.asks, ...this.bids]);
+        let allOrders = concat(this.asks, ...this.bids);
+        allOrders = isEmpty(allOrders) ? [] : allOrders.map((i) => i.json());
+
+        const {totalFilled, orders: totalOffers} = matchOrder(order.json(), allOrders);
 
         let totalSettledQty = 0;
 
@@ -467,6 +470,7 @@ export class OrderBook {
             // Let's settle these offers now
             for (const offer of totalOffers) {
                 const [orderToSettle, qtyToSettle, priceToSettle] = offer;
+                verbose('Offer: orderToSettleJson ', JSON.stringify(orderToSettle));
 
                 if (qtyToSettle <= 0) {
                     verbose(`❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌`);
@@ -476,8 +480,8 @@ export class OrderBook {
                     continue;
                 }
                 // @ts-ignore
-                const orderToSettleJson = orderToSettle.json();
-                verbose('Offer: orderToSettleJson ', JSON.stringify(orderToSettleJson));
+                // const orderToSettleJson = orderToSettle.json();
+                // verbose('Offer: orderToSettleJson ', JSON.stringify(orderToSettleJson));
                 // seller, if is buying, then matched is sell, else when selling matched is buyer¸
                 const seller = isBuy ? orderToSettle : order;
                 const buyer = isBuy ? order : orderToSettle; // buyer
@@ -510,7 +514,7 @@ export class OrderBook {
                     // @ts-ignore
                     orderToSettle.id,
                     // @ts-ignore
-                    orderToSettle.json()
+                    orderToSettle
                 ); // update or create order
                 verbose(
                     'OrderSettled ->orderToSettle.create',

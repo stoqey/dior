@@ -54,26 +54,26 @@ describe('Tiny market', () => {
     const market = [...tinyMarket];
     it('it should match slice SELL order', () => {
         const order: XOrder = {
-            qty: 200,
+            qty: 111,
             action: 'SELL',
             price: 3.0,
         };
 
         const matchedOrder = matchOrder(order, market);
 
-        expect(matchedOrder.totalFilled).to.be.equal(order.qty / 2);
+        expect(matchedOrder.totalFilled).to.be.equal(100);
     });
 
     it('it should match slice BUY order', () => {
         const order: XOrder = {
-            qty: 200,
+            qty: 111,
             action: 'BUY',
             price: 3.2,
         };
 
         const matchedOrder = matchOrder(order, market);
 
-        expect(matchedOrder.totalFilled).to.be.equal(order.qty / 2);
+        expect(matchedOrder.totalFilled).to.be.equal(100);
     });
 });
 // describe('BEAR: The Matching Machine LIMIT BUY+SELL', () => {

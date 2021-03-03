@@ -6,6 +6,7 @@ import {sortBuyOrders, sortSellOrders} from './orders';
 
 export interface XOrder {
     qty: number;
+    filledQty?: number;
     price?: number;
     action: Action;
     date?: Date;
@@ -64,7 +65,7 @@ export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
     let qtyRemaining = qtyRequired;
 
     for (const offer of sortedOffers) {
-        const currentOfferQty = offer.qty;
+        const currentOfferQty = offer.qty - (offer.filledQty || 0);
         const currentOfferPrice = offer.price;
 
         const currentOfferName = `${offer.action.toLocaleUpperCase()} @${currentOfferPrice}`;
@@ -162,7 +163,7 @@ export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
     console.log(`RequiredQTY=${qtyRequired}`);
     console.log(`RemainingQTY=${qtyRemaining}`);
     console.log(`-------------------------totalFilled=${totalFilled}`);
-    // console.log(JSON.stringify(possibleMatches));
+    console.log(JSON.stringify(possibleMatches));
 
     // Return value
     return {totalFilled, orders: possibleMatches};
