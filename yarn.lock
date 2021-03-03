@@ -323,10 +323,10 @@
     graphql "^15.4.0"
     graphql-tag "^2.11.0"
 
-"@stoqey/sofa@^0.1.11":
-  version "0.1.11"
-  resolved "https://registry.yarnpkg.com/@stoqey/sofa/-/sofa-0.1.11.tgz#98078ccf4ac337b31ee0210b95456177ae1c95d7"
-  integrity sha512-yypo20pW+6QtX9lpDmvJWOyElh05yGmRHNPIhDhV/6rQKAVuYedySzx7L/DoBq9beWEf7C48RG5T/x6TyX3Pww==
+"@stoqey/sofa@^0.1.12":
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/@stoqey/sofa/-/sofa-0.1.12.tgz#a5e8258dbbf7b8df5698571fd55977b6dbd910f4"
+  integrity sha512-t15Sgfh6vcWdqR0gjVtIpvqOaiSgO1gNi+dUyh3J3P+PrNuiNUpUr4rQ8hJjdJMGWDQ0PcDyYSvHk4kfjKV6vg==
   dependencies:
     couchbase "^3.1.1"
     debug "^4.3.1"

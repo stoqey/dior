@@ -554,7 +554,7 @@ export class OrderBook {
         } else {
             // Order has not been filled just save it in orderBook
             // TODO Check if it's a noise offer
-            await this.orderModal.create(order.json()); // update or create order
+            await this.orderModal.create(new Order(order).json()); // update or create order
         }
 
         return true;
