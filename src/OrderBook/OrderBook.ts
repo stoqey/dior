@@ -9,6 +9,7 @@ import {Trade} from '../Trade';
 import {getAllOrders, OrderModal, OrderRecordModal} from '../Order/Order.modal';
 import {Currency, CurrencyModel, CurrencySingleton} from '../sofa/Currency';
 import {sortBuyOrders, sortSellOrders} from '../utils/orders';
+import {isAsk, isBid, isCancelled, isFilled, saveOrder} from '../Order/order.utils';
 import {APPEVENTS, AppEvents} from '../events';
 import {log, verbose} from '../log';
 import {generateUUID, JSONDATA} from '../utils';
@@ -153,7 +154,7 @@ export class OrderBook {
      * @param price number
      */
     public async saveOrderRecord(order: Order): Promise<any> {
-        return await OrderRecordModal.create(order.json());
+        return await OrderRecordModal.create(order);
     }
 
     /**
@@ -177,7 +178,7 @@ export class OrderBook {
      */
     public async addToBook(order: Order, isActive: boolean) {
         // Update local
-        if (order.isBid()) {
+        if (isBid(order)) {
             this.bids.push(order); // enter pointer to the tree
         } else {
             this.asks.push(order); // enter pointer to the tree
@@ -187,7 +188,7 @@ export class OrderBook {
             await this.setActiveOrder(order);
         }
 
-        return await order.save();
+        return await saveOrder(order);
     }
 
     /**
@@ -213,13 +214,6 @@ export class OrderBook {
 
         // Set active, bids, and asks
         let allOrders: Order[] = await getAllOrders(); // all orders, not trackers
-
-        allOrders = allOrders.map(
-            (o) =>
-                new Order({
-                    ...o,
-                })
-        );
 
         // Clean orders
         // Orders with noise, or already filledOrders
@@ -291,10 +285,7 @@ export class OrderBook {
             const allOrders = concat(self.bids, self.asks);
 
             // Emit zero orders
-            events.emit(
-                APPEVENTS.STQ_ORDERS,
-                isEmpty(allOrders) ? [] : allOrders.map((i) => i.json())
-            );
+            events.emit(APPEVENTS.STQ_ORDERS, isEmpty(allOrders) ? [] : allOrders);
         };
 
         const emitQuoteToAll = () => {
@@ -341,11 +332,11 @@ export class OrderBook {
 
         // TODO if order can be kept or is JUST noise
         const orderId = generateUUID();
-        const order: Order = new Order({
+        const order: Order = {
             ...currentOrder,
             id: orderId,
             date: new Date(),
-        });
+        };
 
         const returnAndRefresh = async (ret: boolean): Promise<boolean> => {
             await this.refresh();
@@ -453,8 +444,7 @@ export class OrderBook {
      * @param order Order
      */
     public async submit(order: Order): Promise<boolean> {
-        const isBuy = order.isBid();
-        const orderQty = order.qty;
+        const isBuy = isBid(order);
 
         // TODO locking currency
         // await this.refresh(); // refresh orders
@@ -471,18 +461,18 @@ export class OrderBook {
             verbose(`❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌`);
             // Order has not been filled just save it in orderBook
             // TODO Check if it's a noise offer
-            await this.orderModal.create(new Order(order).json()); // update or create order
+            await OrderModal.create(order); // update or create order
         } else {
             // Let's settle these offers now
             for (const offer of totalOffers) {
                 const [orderToSettle, qtyToSettle, priceToSettle] = offer;
-                verbose('Offer: orderToSettleJson ', JSON.stringify(orderToSettle.json()));
+                verbose('Offer: orderToSettleJson ', JSON.stringify(orderToSettle));
 
                 if (qtyToSettle <= 0) {
                     verbose(`❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌`);
                     verbose('Offer: qtyToSettle <= 0 ' + qtyToSettle);
                     verbose(`❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌`);
-                    console.error('Offer: qtyToSettle < 0', JSON.stringify(orderToSettle.json()));
+                    console.error('Offer: qtyToSettle < 0', JSON.stringify(orderToSettle));
                     continue;
                 }
                 // @ts-ignore
@@ -523,8 +513,7 @@ export class OrderBook {
                 const createdOrderToSettle = await this.orderModal.updateById(
                     // @ts-ignore
                     orderToSettle.id,
-                    // @ts-ignore
-                    orderToSettle.json()
+                    orderToSettle
                 ); // update or create order
                 verbose(
                     'OrderSettled ->orderToSettle.create',
@@ -557,8 +546,8 @@ export class OrderBook {
                 // delete order it's been cleared
                 await this.saveOrderRecord(order);
             } else {
-                verbose('<======= this.orderModal.create ========' + JSON.stringify(order.json()));
-                await this.orderModal.create(new Order(order).json());
+                verbose('<======= this.orderModal.create ========' + JSON.stringify(order));
+                await OrderModal.create(order);
             }
 
             // Set marketPrice from here

@@ -72,7 +72,7 @@ export const unfilledQty = (order: Order): number => {
 /**
  * save
  */
-export const save = async (order: Order): Promise<Order> => {
+export const saveOrder = async (order: Order): Promise<Order> => {
     try {
         // save the order
         const saved = await OrderModal.create(order);
