@@ -13,6 +13,7 @@ import {APPEVENTS, AppEvents} from '../events';
 import {log, verbose} from '../log';
 import {generateUUID, JSONDATA} from '../utils';
 import {matchOrder} from '../utils/matching';
+import {concat} from 'lodash';
 
 const minQty = 1;
 
@@ -280,14 +281,13 @@ export class OrderBook {
     public heartbeat() {
         const events = AppEvents.Instance;
         const emitAllOrders = () => {
-            const allOrders = [...this.bids, ...this.asks];
+            const allOrders = concat(this.bids, this.asks);
 
-            if (!isEmpty(allOrders)) {
-                events.emit(
-                    APPEVENTS.STQ_ORDERS,
-                    allOrders.map((i) => i.json())
-                );
-            }
+            // Emit zero orders
+            events.emit(
+                APPEVENTS.STQ_ORDERS,
+                isEmpty(allOrders) ? [] : allOrders.map((i) => i.json())
+            );
         };
 
         const emitQuoteToAll = () => {
