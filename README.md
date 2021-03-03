@@ -35,6 +35,9 @@
 * ✅ HTTP: TCP/UDP server that accepts orders
 * ✅ reporting market volume, share price
 * ✅ reporting acknowledgments & updates to clients (share price, displayed/hidden orders...)
+* Master-slave cluster, auto-re-elect master
+* Same-sync
+* Tradebook cronjobs
 
 ## Market behaviour
 
