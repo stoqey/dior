@@ -13,7 +13,7 @@ export interface XOrder {
     type?: OrderType;
 }
 
-type OORDER = XOrder | Order;
+type OORDER = XOrder | Order | any;
 
 /**
  * Matched Orders

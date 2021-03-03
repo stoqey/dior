@@ -452,10 +452,9 @@ export class OrderBook {
         // TODO locking currency
         // await this.refresh(); // refresh orders
 
-        let allOrders = concat(this.asks, ...this.bids);
-        allOrders = isEmpty(allOrders) ? [] : allOrders.map((i) => i.json());
+        const allOrders = concat(this.asks, ...this.bids);
 
-        const {totalFilled, orders: totalOffers} = matchOrder(order.json(), allOrders);
+        const {totalFilled, orders: totalOffers} = matchOrder(order, allOrders);
 
         let totalSettledQty = 0;
 
@@ -470,13 +469,13 @@ export class OrderBook {
             // Let's settle these offers now
             for (const offer of totalOffers) {
                 const [orderToSettle, qtyToSettle, priceToSettle] = offer;
-                verbose('Offer: orderToSettleJson ', JSON.stringify(orderToSettle));
+                verbose('Offer: orderToSettleJson ', JSON.stringify(orderToSettle.json()));
 
                 if (qtyToSettle <= 0) {
                     verbose(`❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌`);
                     verbose('Offer: qtyToSettle <= 0 ' + qtyToSettle);
                     verbose(`❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌`);
-                    console.error('Offer: qtyToSettle < 0', JSON.stringify(orderToSettle));
+                    console.error('Offer: qtyToSettle < 0', JSON.stringify(orderToSettle.json()));
                     continue;
                 }
                 // @ts-ignore
@@ -509,60 +508,47 @@ export class OrderBook {
                 //  Save it
                 // create or update this order
                 orderToSettle.filledQty += qtyToSettle; // update filled
-                // @ts-ignore
-                const createdOrderToSettle = await this.orderModal.updateById(
+
+                if (orderToSettle.isFilled()) {
+                    await this.saveOrderRecord(orderToSettle);
+                    await this.orderModal.delete(orderToSettle.id);
+                } else {
                     // @ts-ignore
-                    orderToSettle.id,
-                    // @ts-ignore
-                    orderToSettle
-                ); // update or create order
-                verbose(
-                    'OrderSettled ->orderToSettle.create',
-                    JSON.stringify(createdOrderToSettle)
-                );
+                    const createdOrderToSettle = await this.orderModal.updateById(
+                        // @ts-ignore
+                        orderToSettle.id,
+                        // @ts-ignore
+                        orderToSettle
+                    ); // update or create order
+                    verbose(
+                        'OrderSettled ->orderToSettle.create',
+                        JSON.stringify(createdOrderToSettle)
+                    );
+                }
+                // Check if it has been filled
 
                 // TODO
                 // Clean orders
-
-                // if (orderToSettle.qty <= qtyToSettle) {
-                //     verbose(
-                //         '<======= orderToSettle.qty <= qtyToSettle ========>',
-                //         JSON.stringify(createdOrderToSettle)
-                //     );
-                //     // @ts-ignore
-                //     // Close this opposite order
-                //     // Record order before deleting
-                //     await this.saveOrderRecord(orderToSettle);
-                //     // @ts-ignore
-                //     await this.orderModal.delete(orderToSettle.id); //
-                // }
             }
 
             // END For loop
-
             log(
                 `⏭⏭⏭⏭: totalSettledQty totalSettledQty totalSettledQty totalSettledQty ${totalSettledQty}`
             );
 
             // create or update this order
             order.filledQty += totalSettledQty; // update filled
-            // const createdOrder = await this.orderModal.create(order); // update or create order
-
-            // verbose(`⏭⏭⏭⏭: createdOrder ${createdOrder}`);
 
             // Update order after
             // No need to delete this order it won't exit in orderbook, just a record of it is need
-            // if (orderQty === totalSettledQty) {
-            //     verbose('<======= orderQty === totalSettledQty ========> ORDERRECORD');
-            //     // delete order it's been cleared
-            //     await this.saveOrderRecord(order);
-            //     // @ts-ignore
-            //     // await this.orderModal.delete(createdOrder.id);
-            // } else {
-
-            // }
-            verbose('<======= this.orderModal.create ========' + JSON.stringify(order.json()));
-            await this.orderModal.create(new Order(order).json());
+            if (order.isFilled()) {
+                verbose('<======= orderQty === totalSettledQty ========> ORDERRECORD');
+                // delete order it's been cleared
+                await this.saveOrderRecord(order);
+            } else {
+                verbose('<======= this.orderModal.create ========' + JSON.stringify(order.json()));
+                await this.orderModal.create(new Order(order).json());
+            }
 
             // Set marketPrice from here
             const lastMatchedOrder = totalOffers[totalOffers.length - 1];
