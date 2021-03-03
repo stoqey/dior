@@ -29,7 +29,13 @@ export class OrderBook {
     tradeBook: TradeBook;
     orderModal: typeof OrderModal;
     activeOrders: Order[] = [];
-    bids: Order[] = [];
+    private _bids: Order[] = [];
+    public get bids(): Order[] {
+        return this._bids;
+    }
+    public set bids(value: Order[]) {
+        this._bids = value;
+    }
     asks: Order[] = [];
     static _instance: OrderBook;
 
@@ -234,7 +240,7 @@ export class OrderBook {
         }
 
         // Clean orders
-        allOrders = allOrders.filter((i) => i.qty - i.filledQty > 0);
+        allOrders = allOrders.filter((i) => i.qty - i.filledQty >= 1);
 
         // emit that we have new fresh orders
         // TODO rate limiter
@@ -280,8 +286,9 @@ export class OrderBook {
      */
     public heartbeat() {
         const events = AppEvents.Instance;
+        const self = this;
         const emitAllOrders = () => {
-            const allOrders = concat(this.bids, this.asks);
+            const allOrders = concat(self.bids, self.asks);
 
             // Emit zero orders
             events.emit(
@@ -504,27 +511,30 @@ export class OrderBook {
                 // update settledAmount
                 totalSettledQty += qtyToSettle;
 
+                const isOppositeOrderFilled =
+                    orderToSettle.filledQty + qtyToSettle === orderToSettle.qty;
+
                 // @ts-ignore
                 //  Save it
                 // create or update this order
                 orderToSettle.filledQty += qtyToSettle; // update filled
 
-                if (orderToSettle.isFilled()) {
-                    await this.saveOrderRecord(orderToSettle);
-                    await this.orderModal.delete(orderToSettle.id);
-                } else {
+                // @ts-ignore
+                const createdOrderToSettle = await this.orderModal.updateById(
                     // @ts-ignore
-                    const createdOrderToSettle = await this.orderModal.updateById(
-                        // @ts-ignore
-                        orderToSettle.id,
-                        // @ts-ignore
-                        orderToSettle
-                    ); // update or create order
-                    verbose(
-                        'OrderSettled ->orderToSettle.create',
-                        JSON.stringify(createdOrderToSettle)
-                    );
-                }
+                    orderToSettle.id,
+                    // @ts-ignore
+                    orderToSettle.json()
+                ); // update or create order
+                verbose(
+                    'OrderSettled ->orderToSettle.create',
+                    JSON.stringify(createdOrderToSettle)
+                );
+
+                // if (isOppositeOrderFilled) {
+                //     await this.saveOrderRecord(orderToSettle);
+                //     // await this.orderModal.delete(orderToSettle.id);
+                // }
                 // Check if it has been filled
 
                 // TODO
@@ -536,12 +546,13 @@ export class OrderBook {
                 `⏭⏭⏭⏭: totalSettledQty totalSettledQty totalSettledQty totalSettledQty ${totalSettledQty}`
             );
 
+            const isOrderFilled = order.filledQty + totalSettledQty === order.qty;
             // create or update this order
             order.filledQty += totalSettledQty; // update filled
 
             // Update order after
             // No need to delete this order it won't exit in orderbook, just a record of it is need
-            if (order.isFilled()) {
+            if (isOrderFilled) {
                 verbose('<======= orderQty === totalSettledQty ========> ORDERRECORD');
                 // delete order it's been cleared
                 await this.saveOrderRecord(order);
