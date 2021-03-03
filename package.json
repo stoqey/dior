@@ -2,7 +2,7 @@
   "name": "@stoqey/dior",
   "private": false,
   "version": "0.0.1",
-  "description": "",
+  "description": "Order Matching Engine - match hundreds of thousands orders per second",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

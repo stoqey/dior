@@ -5,7 +5,9 @@
 <div align="center">
 
 <img src="./docs/christiandior.jpg"></img>
-
+<p align="center">
+  <h5 align="center"> Order Matching Engine - match hundreds of thousands orders per second </h5>
+</p>
 </div>
 
 

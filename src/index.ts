@@ -51,7 +51,7 @@ async function main() {
  * @param orderReq
  */
 export const order = async (ob: OrderBook, orderReq: Order) => {
-    const order = new Order(orderReq);
+    const order: Order = orderReq;
     const added = await ob.add(order);
 
     if (!added) {
