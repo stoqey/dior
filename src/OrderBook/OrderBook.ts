@@ -456,11 +456,25 @@ export class OrderBook {
 
         let totalSettledQty = 0;
 
-        if (totalFilled > 0) {
+        if (totalFilled <= 0) {
+            verbose(`❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌`);
+            verbose('Offer: totalFilled <= 0 ' + totalFilled);
+            verbose(`❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌`);
+            // Order has not been filled just save it in orderBook
+            // TODO Check if it's a noise offer
+            await this.orderModal.create(new Order(order).json()); // update or create order
+        } else {
             // Let's settle these offers now
             for (const offer of totalOffers) {
                 const [orderToSettle, qtyToSettle, priceToSettle] = offer;
 
+                if (qtyToSettle <= 0) {
+                    verbose(`❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌`);
+                    verbose('Offer: qtyToSettle <= 0 ' + qtyToSettle);
+                    verbose(`❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌`);
+                    console.error('Offer: qtyToSettle < 0', JSON.stringify(orderToSettle));
+                    continue;
+                }
                 // @ts-ignore
                 const orderToSettleJson = orderToSettle.json();
                 verbose('Offer: orderToSettleJson ', JSON.stringify(orderToSettleJson));
@@ -551,10 +565,6 @@ export class OrderBook {
             const lastMatchedOrderPrice = lastMatchedOrder[2];
             await this.saveMarketPrice(lastMatchedOrderPrice);
             log(`✅✅✅: Set market price ${lastMatchedOrderPrice}`);
-        } else {
-            // Order has not been filled just save it in orderBook
-            // TODO Check if it's a noise offer
-            await this.orderModal.create(new Order(order).json()); // update or create order
         }
 
         return true;
