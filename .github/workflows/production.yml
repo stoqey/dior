@@ -1,0 +1,77 @@
+name: production
+
+on:
+  workflow_dispatch:
+  push:
+    # paths-ignore:
+    # - 'mobile/**' # Ignore changes towards the .github directory
+    paths:
+      - "backend/**"
+      - ".github/**"
+      - "backend.Dockerfile"
+    branches:
+    - master # Only trigger on the master branch
+
+env:
+  GKE_PROJECT: ${{ secrets.GKE_PROJECT }}
+  GKE_ZONE: ${{ secrets.GKE_ZONE }}
+  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }} 
+  CLUSTER: stoqey
+  DEPLOYMENT_NAME: stqbackend
+  IMAGE: stqbackend
+
+jobs:
+  setup-build-publish-deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2      
+
+    # Setup gcloud CLI
+    - name: Gcloud setup
+      uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        version: '290.0.1'
+        service_account_key: ${{ secrets.GKE_SA_KEY }}
+        GKE_PROJECT: ${{ secrets.GKE_PROJECT }}
+
+    # Configure Docker to use the gcloud command-line tool as a credential
+    # helper for authentication
+    - name: Save docker configure 
+      run: |-
+        gcloud --quiet auth configure-docker        
+
+    # Build the Docker image
+    - name: Build image
+      run: |-
+        docker build \
+          --file backend.Dockerfile \
+          --tag "gcr.io/$GKE_PROJECT/$IMAGE:${GITHUB_SHA:0:7}" \
+          --build-arg GITHUB_SHA="$GITHUB_SHA" \
+          --build-arg GITHUB_REF="$GITHUB_REF" \
+          --build-arg NPM_AUTH_TOKEN="$NPM_AUTH_TOKEN" \
+          .
+    # Push the Docker image to Google Container Registry
+    - name: Push image to GCR
+      run: |-
+        docker push "gcr.io/$GKE_PROJECT/$IMAGE:${GITHUB_SHA:0:7}"
+
+     # Setup DigitalOcean
+    - name: Setup DigitalOcean doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+        
+    # Set up k8s
+    - name: Set up k8s
+      run: sudo snap install kubectl --classic
+
+    # Get the cluster credentials so we can deploy to the cluster
+    - name: Save k8s kubeconfig
+      run: doctl kubernetes cluster kubeconfig save "$CLUSTER"
+
+    # Deploy the Docker image to the GKE cluster
+    - name: Deploy to k8s
+      run: kubectl set image deployment/$IMAGE $IMAGE=gcr.io/$GKE_PROJECT/$IMAGE:${GITHUB_SHA:0:7}
