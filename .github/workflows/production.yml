@@ -1,16 +1,9 @@
 name: production
 
-on:
-  workflow_dispatch:
-  push:
-    # paths-ignore:
-    # - 'mobile/**' # Ignore changes towards the .github directory
-    paths:
-      - "backend/**"
-      - ".github/**"
-      - "backend.Dockerfile"
-    branches:
-    - master # Only trigger on the master branch
+# on:
+#   push:
+#     branches:
+#       - "master"
 
 env:
   GKE_PROJECT: ${{ secrets.GKE_PROJECT }}
