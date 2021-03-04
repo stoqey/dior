@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "lint": "tslint \"src/**/*.ts\" --project tsconfig.json",
-    "build": "rimraf dist && tsc",
+    "build": "rimraf build && tsc",
     "dev": "nodemon src/index.ts",
     "utils": "mocha src/utils/*test.ts --exit",
     "match": "mocha src/utils/matching.test.ts --exit",

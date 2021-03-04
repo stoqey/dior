@@ -10,10 +10,10 @@ RUN apk add --no-cache --virtual .gyp \
         python3 \
         make \
         g++ \
-    && npm install \
+    && yarn \
     && apk del .gyp
 
-RUN npm run be:build
+RUN yarn build
 
 # use lighter image
 FROM mhart/alpine-node:slim-15.7.0
@@ -21,4 +21,4 @@ RUN apk add libc6-compat
 COPY --from=builder /srv .
 ENV NODE_ENV=production
 EXPOSE 3000
-CMD ["node", "backend/build/index.js"]
+CMD ["node", "build/index.js"]
