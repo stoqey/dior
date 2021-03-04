@@ -9,9 +9,6 @@ env:
   GKE_PROJECT: ${{ secrets.GKE_PROJECT }}
   GKE_ZONE: ${{ secrets.GKE_ZONE }}
   NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }} 
-  FB_SA_KEY: ${{ secrets.FB_SA_KEY_JSON }}
-  PAYPAL_ID: ${{ secrets.DEV_PAYPAL_ID }}
-  BACKEND: ${{ secrets.DEV_STQ_BACKEND }} 
   CLUSTER: cloudx
   DEPLOYMENT: dior
   IMAGE: dior-dev
@@ -43,12 +40,8 @@ jobs:
       run: |-
         docker build \
           --tag "gcr.io/$GKE_PROJECT/$IMAGE:${GITHUB_SHA:0:7}" \
-          --build-arg BACKEND="$BACKEND" \
-          --build-arg PAYPAL_ID="$PAYPAL_ID" \
-          --build-arg FB_SA_KEY="$FB_SA_KEY" \
           --build-arg GITHUB_SHA="$GITHUB_SHA" \
           --build-arg GITHUB_REF="$GITHUB_REF" \
-          --build-arg NPM_AUTH_TOKEN="$NPM_AUTH_TOKEN" \
           .
     # Push the Docker image to Google Container Registry
     - name: Push image to GCR
