@@ -1,7 +1,8 @@
-import {ITime} from '../shared';
+import {Action, ITime} from '../shared';
 
 interface ITrade extends ITime {
     id?: string;
+    action: Action;
     buyer: string;
     seller: string;
     instrument: string;
