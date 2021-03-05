@@ -417,7 +417,7 @@ export class OrderBook {
             const bidOrderId = buyer.id;
 
             // TODO add action to trade
-            const newTrade = new Trade({
+            const newTrade: Trade = {
                 id: generateUUID(),
                 action,
                 buyer: buyerId,
@@ -428,7 +428,7 @@ export class OrderBook {
                 date: new Date(),
                 bidOrderId: bidOrderId,
                 askOrderId: askOrderId,
-            });
+            };
 
             // Enter trade
             await this.tradeBook.enter(newTrade);
