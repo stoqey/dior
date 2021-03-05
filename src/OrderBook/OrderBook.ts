@@ -430,6 +430,8 @@ export class OrderBook {
                 askOrderId: askOrderId,
             };
 
+            // TODO currency update
+
             // Enter trade
             await this.tradeBook.enter(newTrade);
 
