@@ -411,6 +411,7 @@ export class OrderBook {
         action: Action
     ): Promise<Trade> {
         try {
+            const events = AppEvents.Instance;
             const sellerId = seller.clientId;
             const askOrderId = seller.id;
             const buyerId = buyer.clientId;
@@ -434,6 +435,8 @@ export class OrderBook {
 
             // Enter trade
             await this.tradeBook.enter(newTrade);
+
+            events.emit(APPEVENTS.STQ_TRADE, newTrade); // send new trade to clients
 
             // TODO events about settlement
 
