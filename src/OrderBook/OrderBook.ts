@@ -430,7 +430,7 @@ export class OrderBook {
                 askOrderId: askOrderId,
             };
 
-            // TODO currency update
+            // TODO currency update marketdata
 
             // Enter trade
             await this.tradeBook.enter(newTrade);
