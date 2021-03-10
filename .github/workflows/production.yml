@@ -1,17 +1,17 @@
-name: production
+name: develop
 
-# on:
-#   push:
-#     branches:
-#       - "master"
+on:
+  push:
+    branches:
+      - "master"
 
 env:
   GKE_PROJECT: ${{ secrets.GKE_PROJECT }}
   GKE_ZONE: ${{ secrets.GKE_ZONE }}
   NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }} 
   CLUSTER: stoqey
-  DEPLOYMENT_NAME: stqbackend
-  IMAGE: stqbackend
+  DEPLOYMENT: dior
+  IMAGE: dior
 
 jobs:
   setup-build-publish-deploy:
@@ -20,11 +20,10 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2      
+      uses: actions/checkout@v2
 
     # Setup gcloud CLI
-    - name: Gcloud setup
-      uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
       with:
         version: '290.0.1'
         service_account_key: ${{ secrets.GKE_SA_KEY }}
@@ -34,17 +33,15 @@ jobs:
     # helper for authentication
     - name: Save docker configure 
       run: |-
-        gcloud --quiet auth configure-docker        
+        gcloud --quiet auth configure-docker    
 
     # Build the Docker image
     - name: Build image
       run: |-
         docker build \
-          --file backend.Dockerfile \
           --tag "gcr.io/$GKE_PROJECT/$IMAGE:${GITHUB_SHA:0:7}" \
           --build-arg GITHUB_SHA="$GITHUB_SHA" \
           --build-arg GITHUB_REF="$GITHUB_REF" \
-          --build-arg NPM_AUTH_TOKEN="$NPM_AUTH_TOKEN" \
           .
     # Push the Docker image to Google Container Registry
     - name: Push image to GCR
@@ -67,4 +64,4 @@ jobs:
 
     # Deploy the Docker image to the GKE cluster
     - name: Deploy to k8s
-      run: kubectl set image deployment/$IMAGE $IMAGE=gcr.io/$GKE_PROJECT/$IMAGE:${GITHUB_SHA:0:7}
+      run: kubectl set image deployment/$DEPLOYMENT $DEPLOYMENT=gcr.io/$GKE_PROJECT/$IMAGE:${GITHUB_SHA:0:7}

@@ -108,18 +108,20 @@ export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
                 }
             } else {
                 // Market order here
-                if (myQtyIsFilled) {
-                    // offer.filledQty += qtyPromised; // update the offer with filled qty
-                    possibleMatches.push([offer, qtyRemaining, currentOfferPrice]);
-                    // finish this order no need to get other
-                    qtyRemaining = 0;
-                    console.log(`QTY FILLED FOR -----> MATCH: ${orderName}`);
-                    break;
-                } else {
-                    // reduce qtyPromised
-                    qtyRemaining -= currentOfferQty;
-                    possibleMatches.push([offer, currentOfferQty, currentOfferPrice]); // add to possible offers
-                    console.log(`QTY PARTIALLY FILLED FOR -----> MATCH: ${orderName}`);
+                if (orderPrice >= currentOfferPrice) {
+                    if (myQtyIsFilled) {
+                        // offer.filledQty += qtyPromised; // update the offer with filled qty
+                        possibleMatches.push([offer, qtyRemaining, currentOfferPrice]);
+                        // finish this order no need to get other
+                        qtyRemaining = 0;
+                        console.log(`QTY FILLED FOR -----> MATCH: ${orderName}`);
+                        break;
+                    } else {
+                        // reduce qtyPromised
+                        qtyRemaining -= currentOfferQty;
+                        possibleMatches.push([offer, currentOfferQty, currentOfferPrice]); // add to possible offers
+                        console.log(`QTY PARTIALLY FILLED FOR -----> MATCH: ${orderName}`);
+                    }
                 }
             }
         } else {
@@ -142,18 +144,20 @@ export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
                 }
             } else {
                 // Market Orders
-                if (myQtyIsFilled) {
-                    // offer.filledQty += qtyPromised; // update the offer with filled qty
-                    possibleMatches.push([offer, qtyRemaining, currentOfferPrice]);
-                    // finish this order no need to get other
-                    qtyRemaining = 0;
-                    console.log(`QTY FILLED FOR -----> MATCH: ${orderName}`);
-                    break;
-                } else {
-                    // reduce qtyPromised
-                    qtyRemaining -= currentOfferQty;
-                    possibleMatches.push([offer, currentOfferQty, currentOfferPrice]); // add to possible offers
-                    console.log(`QTY PARTIALLY FILLED FOR -----> MATCH: ${orderName}`);
+                if (orderPrice <= currentOfferPrice) {
+                    if (myQtyIsFilled) {
+                        // offer.filledQty += qtyPromised; // update the offer with filled qty
+                        possibleMatches.push([offer, qtyRemaining, currentOfferPrice]);
+                        // finish this order no need to get other
+                        qtyRemaining = 0;
+                        console.log(`QTY FILLED FOR -----> MATCH: ${orderName}`);
+                        break;
+                    } else {
+                        // reduce qtyPromised
+                        qtyRemaining -= currentOfferQty;
+                        possibleMatches.push([offer, currentOfferQty, currentOfferPrice]); // add to possible offers
+                        console.log(`QTY PARTIALLY FILLED FOR -----> MATCH: ${orderName}`);
+                    }
                 }
             }
         }

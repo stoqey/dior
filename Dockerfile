@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:15.7.0 AS builder
+FROM mhart/alpine-node:10.19 AS builder
 
 WORKDIR /srv
 
@@ -16,7 +16,7 @@ RUN apk add --no-cache --virtual .gyp \
 RUN yarn build
 
 # use lighter image
-FROM mhart/alpine-node:slim-15.7.0
+FROM mhart/alpine-node:slim-10.19
 RUN apk add libc6-compat
 COPY --from=builder /srv .
 ENV NODE_ENV=production

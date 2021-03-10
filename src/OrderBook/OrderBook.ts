@@ -15,6 +15,7 @@ import {log, verbose} from '../log';
 import {generateUUID, JSONDATA} from '../utils';
 import {matchOrder} from '../utils/matching';
 import {concat} from 'lodash';
+import {Action} from '../shared';
 
 const minQty = 1;
 
@@ -406,17 +407,20 @@ export class OrderBook {
         seller: Order,
         buyer: Order,
         qty: number,
-        price: number
+        price: number,
+        action: Action
     ): Promise<Trade> {
         try {
+            const events = AppEvents.Instance;
             const sellerId = seller.clientId;
             const askOrderId = seller.id;
             const buyerId = buyer.clientId;
             const bidOrderId = buyer.id;
 
             // TODO add action to trade
-            const newTrade = new Trade({
+            const newTrade: Trade = {
                 id: generateUUID(),
+                action,
                 buyer: buyerId,
                 seller: sellerId,
                 instrument: buyer.instrument,
@@ -425,10 +429,14 @@ export class OrderBook {
                 date: new Date(),
                 bidOrderId: bidOrderId,
                 askOrderId: askOrderId,
-            });
+            };
+
+            // TODO currency update marketdata
 
             // Enter trade
             await this.tradeBook.enter(newTrade);
+
+            events.emit(APPEVENTS.STQ_TRADE, newTrade); // send new trade to clients
 
             // TODO events about settlement
 
@@ -445,6 +453,7 @@ export class OrderBook {
      */
     public async submit(order: Order): Promise<boolean> {
         const isBuy = isBid(order);
+        const action = order.action;
 
         // TODO locking currency
         // await this.refresh(); // refresh orders
@@ -487,7 +496,8 @@ export class OrderBook {
                     seller,
                     buyer,
                     qtyToSettle,
-                    priceToSettle
+                    priceToSettle,
+                    action
                 );
 
                 verbose('OrderSettled: Trade ', JSON.stringify(settledTrade));
