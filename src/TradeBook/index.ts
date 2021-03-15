@@ -23,6 +23,11 @@ export class TradeBook {
     }
 
     /**
+     * createSettlement
+     */
+    public createSettlement() {}
+
+    /**
      * reject
      * @param trade Trade
      */
