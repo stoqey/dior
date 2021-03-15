@@ -11,6 +11,7 @@ export interface XOrder {
     action: Action;
     date?: Date;
     type?: OrderType;
+    clientId?: string;
 }
 
 type OORDER = XOrder | Order;
@@ -31,7 +32,7 @@ interface MatchResults {
  */
 export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
     const isBuying = order.action === 'BUY';
-
+    const clientId = order && order.clientId;
     const orderType = order.type || 'limit';
     const isLimitOrder = orderType === 'limit';
 
@@ -67,6 +68,13 @@ export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
     for (const offer of sortedOffers) {
         const currentOfferQty = offer.qty - (offer.filledQty || 0);
         const currentOfferPrice = offer.price;
+        const currentOfferClientId = offer.clientId;
+
+        if (clientId === currentOfferClientId) {
+            // if it's the same user, skip it
+            console.log(`QTY ZERO FOR -----> MATCH: ${orderName}`);
+            continue;
+        }
 
         const currentOfferName = `${offer.action.toLocaleUpperCase()} @${currentOfferPrice}`;
 
