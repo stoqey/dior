@@ -52,28 +52,41 @@ export const tinyMarket: XOrder[] = [
 
 describe('Tiny market', () => {
     const market = [...tinyMarket];
-    it('it should match slice SELL order', () => {
-        const order: XOrder = {
-            qty: 20,
-            action: 'SELL',
-            price: 3.0,
-        };
+    // it('it should match slice SELL order', () => {
+    //     const order: XOrder = {
+    //         qty: 20,
+    //         action: 'SELL',
+    //         price: 3.0,
+    //     };
 
-        const matchedOrder = matchOrder(order, market);
+    //     const matchedOrder = matchOrder(order, market);
 
-        expect(matchedOrder.totalFilled).to.be.equal(order.qty / 2);
-    });
+    //     expect(matchedOrder.totalFilled).to.be.equal(order.qty / 2);
+    // });
 
-    it('it should match slice BUY order', () => {
+    // it('it should match slice BUY order', () => {
+    //     const order: XOrder = {
+    //         qty: 20,
+    //         action: 'BUY',
+    //         price: 3.2,
+    //     };
+
+    //     const matchedOrder = matchOrder(order, market);
+
+    //     expect(matchedOrder.totalFilled).to.be.equal(order.qty / 2);
+    // });
+
+    it('it should not match orders from same clientID', () => {
         const order: XOrder = {
             qty: 20,
             action: 'BUY',
             price: 3.2,
+            clientId: 'ceddy',
         };
 
-        const matchedOrder = matchOrder(order, market);
+        const matchedOrder = matchOrder(order, [{...market[1], clientId: 'ceddy'}]);
 
-        expect(matchedOrder.totalFilled).to.be.equal(order.qty / 2);
+        expect(matchedOrder.totalFilled).to.be.equal(0);
     });
 });
 // describe('BEAR: The Matching Machine LIMIT BUY+SELL', () => {

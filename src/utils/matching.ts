@@ -1,5 +1,6 @@
 import {isEmpty} from 'lodash';
 import sum from 'lodash/sum';
+import {log} from '../log';
 import {Order} from '../Order';
 import {Action, OrderType} from '../shared';
 import {sortBuyOrders, sortSellOrders} from './orders';
@@ -72,7 +73,7 @@ export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
 
         if (clientId === currentOfferClientId) {
             // if it's the same user, skip it
-            console.log(`QTY ZERO FOR -----> MATCH: ${orderName}`);
+            console.log(`ERROR -----> MATCH: SAME USER's`);
             continue;
         }
 
