@@ -1,5 +1,9 @@
+import {MarketDataType} from '@stoqey/client-graphql';
+
 // eslint-disable-next-line prettier/prettier
-const mk = {$schema: [0.1,
+const mk = {
+    $schema: [
+        0.1,
         0.1,
         0.2,
         0.3,
@@ -78,4 +82,65 @@ const mk = {$schema: [0.1,
         2.9,
         2.8,
     ],
+};
+
+// https://www.investopedia.com/ask/answers/how-do-you-calculate-percentage-gain-or-loss-investment/
+
+/**
+ * Get Profit percentage gained
+ * @param startPrice
+ * @param endPrice
+ */
+export const getChange = (startPrice: number, endPrice: number): number => {
+    const results = ((endPrice - startPrice) / startPrice) * 100;
+    return Number.isNaN(results) ? 0 : results;
+};
+
+export const insertIntoInflux = () => {
+    // TODO volume
+
+    const instrument = 'STQ';
+    let market: MarketDataType = {
+        id: instrument,
+        symbol: instrument,
+        name: 'Stoqey',
+        changePct: 0,
+        change: 0,
+        open: 0,
+        high: 0,
+        low: 0,
+        close: 0,
+        volume: 0,
+        date: new Date('2021-01-02'),
+    };
+
+    const fullMarket = [...mk.$schema];
+    const finalMarket: MarketDataType[] = [market];
+
+    mk.$schema.forEach((item, index) => {
+        const {date: prevDate, close: prevClose, high: prevHigh, low: prevLow, volume} = market;
+        const close = item;
+        const changePct = getChange(fullMarket[index - 1], close);
+        const change = (changePct / 100) * close;
+        const date = new Date(new Date(prevDate).setDate(prevDate.getDate() + 1));
+        const high = close > prevHigh ? close : prevHigh;
+        const low = close < prevLow ? close : prevHigh;
+
+        const newMarket = {
+            ...market,
+            changePct,
+            change,
+            high,
+            low,
+            close,
+            open: close,
+            volume,
+            date,
+        };
+
+        finalMarket.push(newMarket);
+        market = newMarket;
+    });
+
+    console.log('All market is', JSON.stringify(finalMarket));
 };
