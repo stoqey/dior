@@ -30,7 +30,7 @@ interface QueryData {
     limit?: number;
 }
 
-const query = async function (args: QueryData): Promise<any> {
+export const query = async function (args: QueryData): Promise<any> {
     const {
         symbol = 'AAPL',
         startDate: startDateOg = new Date(),
@@ -95,7 +95,7 @@ interface DeleteMeasurement {
     symbol: Date;
 }
 
-const deleteMeasurement = async function (args: DeleteMeasurement): Promise<boolean> {
+export const deleteMeasurement = async function (args: DeleteMeasurement): Promise<boolean> {
     try {
         const {date, symbol} = args;
 
@@ -117,7 +117,7 @@ const deleteMeasurement = async function (args: DeleteMeasurement): Promise<bool
 };
 
 type InsertData = MarketDataType | MarketDataType[];
-const insert = async function (data: InsertData): Promise<boolean> {
+export const insert = async function (data: InsertData): Promise<boolean> {
     const defaultTimestamp = new Date();
     const items: IPoint[] = [];
 
