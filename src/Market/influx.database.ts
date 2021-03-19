@@ -1,6 +1,7 @@
 import * as Influx from 'influx';
 import {marketDataSchema} from './marketdata.schema';
 import {influxDbHost, influxDbPort, influxDbUser, influxDbPass, databaseName} from './config';
+import {log} from '../log';
 
 export type GroupBy =
     | '10s'
@@ -27,6 +28,24 @@ if (influxDbUser) {
     config.username = influxDbUser;
     config.password = influxDbPass;
 }
+
+export const startInflux = async (): Promise<boolean> => {
+    try {
+        const names = await influx.getDatabaseNames();
+        if (!names.includes(databaseName)) {
+            await influx.createDatabase(databaseName);
+            log(`Database created ========> ${databaseName}`);
+        }
+
+        log(`Started Influx ${databaseName}`);
+
+        return true;
+    } catch (error) {
+        log('error running app', error && error.message);
+        console.error(error);
+        process.exit(1);
+    }
+};
 
 const influx = new Influx.InfluxDB(config);
 
