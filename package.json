@@ -97,8 +97,10 @@
     "chalk": "^4.1.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
+    "influx": "^5.8.0",
     "lodash": "^4.17.20",
     "moment": "^2.29.1",
+    "nano-date": "^4.1.0",
     "nanoexpress": "^2.4.9",
     "nodemon": "^2.0.7",
     "uuid": "^8.3.2"

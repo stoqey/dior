@@ -4,7 +4,7 @@ import cors from 'cors';
 import {log} from '../log';
 import {PORT, appName, HOSTNAME} from '../config';
 import {brokerClient} from './broker.client';
-import {marketDataClient} from './market.data';
+import {marketDataClient} from '../Market/market.client';
 import {socketClient} from './socket';
 import {refreshCurrency} from '../sofa/Currency';
 
