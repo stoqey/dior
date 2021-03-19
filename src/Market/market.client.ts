@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import nanoexpress, {nanoexpressApp} from 'nanoexpress';
 import {MarketDataType} from '@stoqey/client-graphql';
-import {log} from '../log';
+import {log, verbose} from '../log';
 
 import {Currency, CurrencyModel, CurrencySingleton} from '../sofa/Currency';
-import {stqInfo, query} from './methods';
+import {stqInfo, query, deleteMeasurement, insert} from './methods';
 export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
     // @ts-ignore
     app.get('/info', function (req, res) {
@@ -42,11 +42,16 @@ export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
             const date = req.query.date;
             const symbol = req.query.symbol;
 
-            console.log('/v1/delete', {date, symbol});
+            verbose('/v1/delete', {date, symbol});
 
-            if (!date && !symbol) {
-                throw new Error('date and symbol not defined');
+            const deletedM = await deleteMeasurement({
+                date,
+                symbol,
+            });
+            if (!deletedM) {
+                throw new Error('failed to delete');
             }
+            return res.json({success: true});
         } catch (error) {
             console.error(error);
             return res.json({
@@ -59,8 +64,9 @@ export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
     // @ts-ignore
     app.post('/v1/insert', async function (req, res) {
         try {
-            res.status(401);
-            res.end();
+            const data = req.body as any;
+            const dataInserted: any = await insert(data);
+            res.json(dataInserted);
         } catch (error) {
             log('error inserting items into influxDB', error);
             res.status(401);
