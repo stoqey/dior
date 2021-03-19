@@ -16,6 +16,7 @@
     "dev": "nodemon src/index.ts",
     "utils": "mocha src/utils/*test.ts --exit",
     "match": "mocha src/utils/matching.test.ts --exit",
+    "market": "mocha src/Market/*.test.ts --exit",
     "clients": "mocha src/clients/*test.ts --exit",
     "prepublishOnly": "npm run build",
     "eslint": "eslint ./src --fix --ext=ts"

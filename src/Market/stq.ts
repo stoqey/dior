@@ -96,7 +96,7 @@ export const getChange = (startPrice: number, endPrice: number): number => {
     return Number.isNaN(results) ? 0 : results;
 };
 
-export const insertIntoInflux = () => {
+export const insertIntoInflux = (): MarketDataType[] => {
     // TODO volume
 
     const instrument = 'STQ';
@@ -142,5 +142,6 @@ export const insertIntoInflux = () => {
         market = newMarket;
     });
 
-    console.log('All market is', JSON.stringify(finalMarket));
+    // console.log('All market is', JSON.stringify(finalMarket));
+    return finalMarket;
 };
