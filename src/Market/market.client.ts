@@ -33,7 +33,7 @@ export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
             console.error(error);
             return res.json({
                 success: false,
-                message: 'error deleting time series',
+                message: 'error querying time series',
             });
         }
     });
