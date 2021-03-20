@@ -2,10 +2,12 @@
 import nanoexpress, {nanoexpressApp} from 'nanoexpress';
 import {MarketDataType} from '@stoqey/client-graphql';
 import {log, verbose} from '../log';
-
+import {startInflux} from './influx.database';
 import {Currency, CurrencyModel, CurrencySingleton} from '../sofa/Currency';
 import {stqInfo, query, deleteMeasurement, insert} from './methods';
+
 export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
+    startInflux(); // start influxDB
     // @ts-ignore
     app.get('/info', function (req, res) {
         return res.json(stqInfo);
@@ -31,7 +33,7 @@ export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
             console.error(error);
             return res.json({
                 success: false,
-                message: 'error deleting time series',
+                message: 'error querying time series',
             });
         }
     });
