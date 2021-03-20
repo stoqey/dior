@@ -136,7 +136,7 @@ export const insertIntoInflux = (): MarketDataType[] => {
 
         const newMarket = {
             ...market,
-            changePct: prevChangePct + changePct,
+            changePct,
             change: prevChange + change,
             high,
             low,
@@ -150,6 +150,6 @@ export const insertIntoInflux = (): MarketDataType[] => {
         market = newMarket;
     });
 
-    // console.log('All market is', JSON.stringify(finalMarket));
+    console.log('All market is', JSON.stringify(finalMarket));
     return finalMarket;
 };
