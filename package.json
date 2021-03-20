@@ -16,6 +16,7 @@
     "dev": "nodemon src/index.ts",
     "utils": "mocha src/utils/*test.ts --exit",
     "match": "mocha src/utils/matching.test.ts --exit",
+    "market": "mocha src/Market/*.test.ts --exit",
     "clients": "mocha src/clients/*test.ts --exit",
     "prepublishOnly": "npm run build",
     "eslint": "eslint ./src --fix --ext=ts"
@@ -97,8 +98,10 @@
     "chalk": "^4.1.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
+    "influx": "^5.8.0",
     "lodash": "^4.17.20",
     "moment": "^2.29.1",
+    "nano-date": "^4.1.0",
     "nanoexpress": "^2.4.9",
     "nodemon": "^2.0.7",
     "uuid": "^8.3.2"

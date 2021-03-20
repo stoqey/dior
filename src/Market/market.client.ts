@@ -1,26 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import nanoexpress, {nanoexpressApp} from 'nanoexpress';
 import {MarketDataType} from '@stoqey/client-graphql';
-import {log} from '../log';
-
+import {log, verbose} from '../log';
+import {startInflux} from './influx.database';
 import {Currency, CurrencyModel, CurrencySingleton} from '../sofa/Currency';
+import {stqInfo, query, deleteMeasurement, insert} from './methods';
 
 export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
+    startInflux(); // start influxDB
     // @ts-ignore
     app.get('/info', function (req, res) {
-        const stqInfo = {
-            symbol: 'STQ',
-            name: 'Stoqey',
-            price: '0',
-            change: 6,
-            changePct: 6,
-            icon: 'https://storage.googleapis.com/stqnetwork.appspot.com/symbols/STQ_dark.png',
-            supply: '',
-            totalVol: '1M',
-            mktCap: '300M',
-        };
-
-        res.json(stqInfo);
+        return res.json(stqInfo);
     });
 
     // @ts-ignore
@@ -31,9 +21,21 @@ export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
         res.json(currencySingleton.getCurrency());
     });
 
-    app.get('/v1/query', function (req: nanoexpress.HttpRequest): nanoexpressApp {
-        log('query', req.query);
-        return null;
+    // @ts-ignore
+    app.get('/v1/query', async function (req, res) {
+        log('/v1/query', req.query);
+        try {
+            const queryArgs = req.query;
+            const queryResults = await query(queryArgs as any);
+            // @ts-ignore
+            return res.json(queryResults);
+        } catch (error) {
+            console.error(error);
+            return res.json({
+                success: false,
+                message: 'error querying time series',
+            });
+        }
     });
 
     // @ts-ignore
@@ -42,11 +44,16 @@ export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
             const date = req.query.date;
             const symbol = req.query.symbol;
 
-            console.log('/v1/delete', {date, symbol});
+            verbose('/v1/delete', {date, symbol});
 
-            if (!date && !symbol) {
-                throw new Error('date and symbol not defined');
+            const deletedM = await deleteMeasurement({
+                date,
+                symbol,
+            });
+            if (!deletedM) {
+                throw new Error('failed to delete');
             }
+            return res.json({success: true});
         } catch (error) {
             console.error(error);
             return res.json({
@@ -59,8 +66,9 @@ export const marketDataClient = (app: nanoexpressApp): nanoexpressApp => {
     // @ts-ignore
     app.post('/v1/insert', async function (req, res) {
         try {
-            res.status(401);
-            res.end();
+            const data = req.body as any;
+            const dataInserted: any = await insert(data);
+            res.json(dataInserted);
         } catch (error) {
             log('error inserting items into influxDB', error);
             res.status(401);
