@@ -2,6 +2,8 @@ import * as Influx from 'influx';
 import {marketDataSchema} from './marketdata.schema';
 import {influxDbHost, influxDbPort, influxDbUser, influxDbPass, databaseName} from './config';
 import {log} from '../log';
+import {insert} from './methods';
+import {insertIntoInflux} from './stq';
 
 export type GroupBy =
     | '10s'
@@ -29,6 +31,8 @@ if (influxDbUser) {
     config.password = influxDbPass;
 }
 
+const influx = new Influx.InfluxDB(config);
+
 export const startInflux = async (): Promise<boolean> => {
     try {
         const names = await influx.getDatabaseNames();
@@ -37,7 +41,10 @@ export const startInflux = async (): Promise<boolean> => {
             log(`Database created ========> ${databaseName}`);
         }
 
-        log(`Started Influx ${databaseName}`);
+        log(`✅✅✅✅✅✅✅✅✅Started Influx ${databaseName}`);
+
+        // const marketData = insertIntoInflux();
+        // await insert(marketData);
 
         return true;
     } catch (error) {
@@ -46,7 +53,5 @@ export const startInflux = async (): Promise<boolean> => {
         process.exit(1);
     }
 };
-
-const influx = new Influx.InfluxDB(config);
 
 export default influx;
