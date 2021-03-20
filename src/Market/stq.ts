@@ -118,7 +118,15 @@ export const insertIntoInflux = (): MarketDataType[] => {
     const finalMarket: MarketDataType[] = [market];
 
     mk.$schema.forEach((item, index) => {
-        const {date: prevDate, close: prevClose, high: prevHigh, low: prevLow, volume} = market;
+        const {
+            date: prevDate,
+            close: prevClose,
+            high: prevHigh,
+            low: prevLow,
+            volume,
+            changePct: prevChangePct,
+            change: prevChange,
+        } = market;
         const close = item;
         const changePct = getChange(fullMarket[index - 1], close);
         const change = (changePct / 100) * close;
@@ -128,8 +136,8 @@ export const insertIntoInflux = (): MarketDataType[] => {
 
         const newMarket = {
             ...market,
-            changePct,
-            change,
+            changePct: prevChangePct + changePct,
+            change: prevChange + change,
             high,
             low,
             close,
