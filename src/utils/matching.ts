@@ -26,6 +26,7 @@ type PossibleMatch = [OORDER, number, number];
 interface MatchResults {
     totalFilled: number;
     orders: PossibleMatch[];
+    hasMore?: boolean;
 }
 /**
  * Match order
@@ -39,6 +40,7 @@ export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
 
     let offers = market.filter((i) => (isBuying ? i.action === 'SELL' : i.action === 'BUY'));
 
+    let hasMore = false;
     if (!isLimitOrder) {
         // TODO Match 2 opposite market orders
         offers = offers.filter((i) => i.type !== 'market');
@@ -52,6 +54,7 @@ export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
         return {
             totalFilled: 0,
             orders: [],
+            hasMore,
         };
     }
 
@@ -80,6 +83,7 @@ export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
         const currentOfferName = `${offer.action.toLocaleUpperCase()} @${currentOfferPrice}`;
 
         if (qtyRemaining <= 0) {
+            hasMore = true;
             // filled qtyPromise
             console.log(`QTY ZERO FOR -----> MATCH: ${orderName}`);
             break;
@@ -103,15 +107,16 @@ export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
 
                     if (myQtyIsFilled) {
                         // offer.filledQty += qtyPromised; // update the offer with filled qty
-                        possibleMatches.push([offer, qtyRemaining, orderPrice]);
+                        possibleMatches.push([offer, qtyRemaining, currentOfferPrice]);
                         // finish this order no need to get other
+                        hasMore = qtyRemaining < currentOfferQty;
                         qtyRemaining = 0;
                         console.log(`QTY FILLED FOR -----> MATCH: ${orderName}`);
                         break;
                     } else {
                         // reduce qtyPromised
                         qtyRemaining -= currentOfferQty;
-                        possibleMatches.push([offer, currentOfferQty, orderPrice]); // add to possible offers
+                        possibleMatches.push([offer, currentOfferQty, currentOfferPrice]); // add to possible offers
                         console.log(`QTY PARTIALLY FILLED FOR -----> MATCH: ${orderName}`);
                     }
                 }
@@ -134,12 +139,13 @@ export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
                 }
             }
         } else {
+            // Sell
             if (isLimitOrder) {
                 // Limit Order
                 if (orderPrice <= currentOfferPrice) {
                     if (myQtyIsFilled) {
                         // offer.filledQty += qtyPromised; // update the offer with filled qty
-                        possibleMatches.push([offer, qtyRemaining, orderPrice]);
+                        possibleMatches.push([offer, qtyRemaining, currentOfferPrice]);
                         // finish this order no need to get other
                         qtyRemaining = 0;
                         console.log(`QTY FILLED FOR -----> MATCH: ${orderName}`);
@@ -147,7 +153,7 @@ export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
                     } else {
                         // reduce qtyPromised
                         qtyRemaining -= currentOfferQty;
-                        possibleMatches.push([offer, currentOfferQty, orderPrice]); // add to possible offers
+                        possibleMatches.push([offer, currentOfferQty, currentOfferPrice]); // add to possible offers
                         console.log(`QTY PARTIALLY FILLED FOR -----> MATCH: ${orderName}`);
                     }
                 }
