@@ -32,9 +32,13 @@ interface MatchResults {
  * Match order
  * order, offers
  */
-export const matchOrder = (order: OORDER, market: OORDER[]): MatchResults => {
+export const matchOrder = (
+    order: OORDER,
+    market: OORDER[],
+    ignoreClientId = false
+): MatchResults => {
     const isBuying = order.action === 'BUY';
-    const clientId = order && order.clientId;
+    const clientId = ignoreClientId ? null : order && order.clientId;
     const orderType = order.type || 'limit';
     const isLimitOrder = orderType === 'limit';
 
