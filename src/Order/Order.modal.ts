@@ -32,6 +32,7 @@ export const getAllOrders = async (orderTrackers?: boolean): Promise<any[]> => {
     try {
         const allOrders = await OrderModal.pagination({
             select: orderTrackers ? orderTrackerFields : orderFields,
+            limit: 500,
         });
 
         return allOrders;

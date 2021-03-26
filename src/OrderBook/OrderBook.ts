@@ -7,7 +7,7 @@ import {Order, OrderParams, OrderTracker} from '../Order';
 import {TradeBook} from '../TradeBook';
 import {Trade} from '../Trade';
 import {getAllOrders, OrderModal, OrderRecordModal} from '../Order/Order.modal';
-import {Currency, CurrencyModel, CurrencySingleton} from '../sofa/Currency';
+import {Currency, CurrencyModel, CurrencySingleton, refreshCurrency} from '../sofa/Currency';
 import {sortBuyOrders, sortSellOrders} from '../utils/orders';
 import {isAsk, isBid, isCancelled, isFilled, saveOrder} from '../Order/order.utils';
 import {APPEVENTS, AppEvents} from '../events';
@@ -290,15 +290,7 @@ export class OrderBook {
         };
 
         const emitQuoteToAll = () => {
-            const currency = this.currency;
-            if (currency) {
-                const dataToSend: Currency = {
-                    ...currency,
-                    date: new Date(),
-                };
-                CurrencySingleton.app.setCurrency(dataToSend);
-                events.emit(APPEVENTS.STQ_QUOTE, dataToSend); // quote the current quote
-            }
+            refreshCurrency();
         };
         setInterval(() => {
             emitAllOrders();
@@ -482,7 +474,7 @@ export class OrderBook {
                     verbose('Offer: qtyToSettle <= 0 ' + qtyToSettle);
                     verbose(`❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌`);
                     console.error('Offer: qtyToSettle < 0', JSON.stringify(orderToSettle));
-                    continue;
+                    break;
                 }
                 // @ts-ignore
                 // const orderToSettleJson = orderToSettle.json();
@@ -526,7 +518,7 @@ export class OrderBook {
                     orderToSettle
                 ); // update or create order
                 verbose(
-                    'OrderSettled ->orderToSettle.create',
+                    'OrderSettled ->orderToSettle.updateById',
                     JSON.stringify(createdOrderToSettle)
                 );
 
