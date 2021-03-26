@@ -315,10 +315,10 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
   integrity sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==
 
-"@stoqey/client-graphql@^0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@stoqey/client-graphql/-/client-graphql-0.1.7.tgz#1ba0509b8e561a4351e16e5e6a2700fd674f1c18"
-  integrity sha512-2DfMJ72RUFMXhmUjhBrIEnmQjtLhvubvZfGoiAW5RV3gPEv4B78FXQzUwa68Mjp3Hg8vpjQymCWaAe9zbTik1g==
+"@stoqey/client-graphql@^0.2.7":
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/@stoqey/client-graphql/-/client-graphql-0.2.7.tgz#4393e0f8be75e27ed185a02fc833744b6e9a6bb3"
+  integrity sha512-ykw958HxL3m1cH3xLrR3KEg07jL6jMNcWgI5X2KU9GThYkYTaCS6hcGdLsxwEOcgJoykarCEwUObURPq6j7Jzw==
   dependencies:
     graphql "^15.4.0"
     graphql-tag "^2.11.0"

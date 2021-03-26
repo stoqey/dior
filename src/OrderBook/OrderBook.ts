@@ -474,7 +474,7 @@ export class OrderBook {
                     verbose('Offer: qtyToSettle <= 0 ' + qtyToSettle);
                     verbose(`❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌`);
                     console.error('Offer: qtyToSettle < 0', JSON.stringify(orderToSettle));
-                    continue;
+                    break;
                 }
                 // @ts-ignore
                 // const orderToSettleJson = orderToSettle.json();
@@ -518,7 +518,7 @@ export class OrderBook {
                     orderToSettle
                 ); // update or create order
                 verbose(
-                    'OrderSettled ->orderToSettle.create',
+                    'OrderSettled ->orderToSettle.updateById',
                     JSON.stringify(createdOrderToSettle)
                 );
 
