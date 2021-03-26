@@ -19,15 +19,15 @@ describe('OrderBook', () => {
             gfd:false,
             gtd: false,
             // OrderObject
-            action: ActionType.BUY,
+            action: ActionType.SELL,
             id: generateUUID(),
             instrument: "STQ",
             clientId: "STQX",
             type: IOrderType.LIMIT,
-            qty: 5,
+            qty: 1,
             filledQty: 0,
             // price: 301,
-            price: 302,
+            price: 199,
             date: new Date(),
         } as any;
         const submitedOrder = await ob.submit(order);
