@@ -19,17 +19,18 @@ describe('OrderBook', () => {
             gfd:false,
             gtd: false,
             // OrderObject
-            action: ActionType.SELL,
+            action: ActionType.BUY,
             id: generateUUID(),
             instrument: "STQ",
-            clientId: "STQ",
+            clientId: "STQX",
             type: IOrderType.LIMIT,
-            qty: 3,
+            qty: 5,
             filledQty: 0,
-            price: 301,
+            // price: 301,
+            price: 302,
             date: new Date(),
         } as any;
-        // const submitedOrder = await ob.submit(order);
-        expect(order).to.be.true;
+        const submitedOrder = await ob.submit(order);
+        expect(submitedOrder).to.be.true;
     });
 });
