@@ -219,7 +219,8 @@ export class OrderBook {
         // Clean orders
         // Orders with noise, or already filledOrders
         // TODO orders that are far fetch, or orders that cannot be used, useless orders
-        const ordersToClean = [...allOrders].filter((i) => i.qty - i.filledQty <= 0 && !i.canceled);
+        const ordersToClean = [...allOrders].filter((i) => i.qty - i.filledQty <= 0);
+
         if (!isEmpty(ordersToClean)) {
             log(
                 `ORDERS TO CLEAN --------------> ${JSON.stringify(
@@ -235,7 +236,7 @@ export class OrderBook {
         }
 
         // Clean orders
-        allOrders = allOrders.filter((i) => i.qty - i.filledQty >= 1);
+        allOrders = allOrders.filter((i) => i.qty - i.filledQty >= 1 && !i.canceled);
 
         // emit that we have new fresh orders
         // TODO rate limiter
