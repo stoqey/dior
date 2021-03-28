@@ -219,7 +219,7 @@ export class OrderBook {
         // Clean orders
         // Orders with noise, or already filledOrders
         // TODO orders that are far fetch, or orders that cannot be used, useless orders
-        const ordersToClean = [...allOrders].filter((i) => i.qty - i.filledQty <= 0);
+        const ordersToClean = [...allOrders].filter((i) => i.qty - i.filledQty <= 0 && !i.canceled);
         if (!isEmpty(ordersToClean)) {
             log(
                 `ORDERS TO CLEAN --------------> ${JSON.stringify(
@@ -307,6 +307,12 @@ export class OrderBook {
      * orderId: String     */
     public async cancelOrder(orderId: string): Promise<boolean> {
         try {
+            verbose(`-------------------- Cancel Order --------------------------- ${orderId}`);
+            verbose(`-------------------- Cancel Order --------------------------- ${orderId}`);
+
+            if (isEmpty(orderId)) {
+                throw new Error('Order ID cannot be empty');
+            }
             // Find order by
             const foundOrder: Order = await OrderModal.findById(orderId);
             foundOrder.canceled = true;
