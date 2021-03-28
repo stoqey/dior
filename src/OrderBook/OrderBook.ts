@@ -15,7 +15,7 @@ import {log, verbose} from '../log';
 import {generateUUID, JSONDATA} from '../utils';
 import {matchOrder} from '../utils/matching';
 import {concat} from 'lodash';
-import {Action} from '../shared';
+import {Action, OrderType} from '../shared';
 
 const minQty = 1;
 
@@ -220,6 +220,7 @@ export class OrderBook {
         // Orders with noise, or already filledOrders
         // TODO orders that are far fetch, or orders that cannot be used, useless orders
         const ordersToClean = [...allOrders].filter((i) => i.qty - i.filledQty <= 0);
+
         if (!isEmpty(ordersToClean)) {
             log(
                 `ORDERS TO CLEAN --------------> ${JSON.stringify(
@@ -235,7 +236,7 @@ export class OrderBook {
         }
 
         // Clean orders
-        allOrders = allOrders.filter((i) => i.qty - i.filledQty >= 1);
+        allOrders = allOrders.filter((i) => i.qty - i.filledQty >= 1 && !i.canceled);
 
         // emit that we have new fresh orders
         // TODO rate limiter
@@ -305,14 +306,27 @@ export class OrderBook {
     /**
      * async cancelOrder
      * orderId: String     */
-    public async cancelOrder(orderId: string): Promise<any> {
+    public async cancelOrder(orderId: string): Promise<boolean> {
         try {
+            verbose(`-------------------- Cancel Order --------------------------- ${orderId}`);
+            verbose(`-------------------- Cancel Order --------------------------- ${orderId}`);
+
+            if (isEmpty(orderId)) {
+                throw new Error('Order ID cannot be empty');
+            }
             // Find order by
+            const foundOrder: Order = await OrderModal.findById(orderId);
+            foundOrder.canceled = true;
+
+            // TODO  check if order is not being worked on
+            await OrderModal.updateById(orderId, foundOrder);
+
             // populate order then
             // remove order
+            return true;
         } catch (error) {
-            console.error(error);
-            log('error canceling order');
+            console.error('error canceling order', error);
+            return false;
         }
     }
 
