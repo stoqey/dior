@@ -15,7 +15,7 @@ import {log, verbose} from '../log';
 import {generateUUID, JSONDATA} from '../utils';
 import {matchOrder} from '../utils/matching';
 import {concat} from 'lodash';
-import {Action} from '../shared';
+import {Action, OrderType} from '../shared';
 
 const minQty = 1;
 
@@ -305,14 +305,21 @@ export class OrderBook {
     /**
      * async cancelOrder
      * orderId: String     */
-    public async cancelOrder(orderId: string): Promise<any> {
+    public async cancelOrder(orderId: string): Promise<boolean> {
         try {
             // Find order by
+            const foundOrder: Order = await OrderModal.findById(orderId);
+            foundOrder.canceled = true;
+
+            // TODO  check if order is not being worked on
+            await OrderModal.updateById(orderId, foundOrder);
+
             // populate order then
             // remove order
+            return true;
         } catch (error) {
-            console.error(error);
-            log('error canceling order');
+            console.error('error canceling order', error);
+            return false;
         }
     }
 
