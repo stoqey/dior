@@ -58,7 +58,7 @@ export const getCurrency = (): Currency => {
     return currencySingleton.getCurrency();
 };
 
-export const refreshCurrency = async () => {
+export const refreshCurrency = async (newCur: Currency = {} as any) => {
     try {
         const events = AppEvents.Instance;
         const currencySingleton = CurrencySingleton.app;
@@ -66,6 +66,7 @@ export const refreshCurrency = async () => {
 
         const dataToSend: Currency = {
             ...currency,
+            ...newCur,
             date: new Date(),
         };
         verbose(`${instrument}: ${dataToSend.close}`);
@@ -73,6 +74,18 @@ export const refreshCurrency = async () => {
         events.emit(APPEVENTS.STQ_QUOTE, dataToSend); // quote the current quote
     } catch (error) {
         console.error('error refreshing currency', error);
+    }
+};
+
+export const updateCurrency = async (newCurrency: Currency, calculate?: boolean) => {
+    const model = new Model('Currency');
+    const collection = model.getCollection();
+
+    try {
+        const oldCurrency: Currency = await CurrencyModel.findById(instrument);
+        await collection.upsert(instrument, {...oldCurrency, ...newCurrency});
+    } catch (error) {
+        process.exit(1);
     }
 };
 

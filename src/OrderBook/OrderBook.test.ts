@@ -22,12 +22,12 @@ describe('OrderBook', () => {
             action: ActionType.SELL,
             id: generateUUID(),
             instrument: "STQ",
-            clientId: "STQX",
+            clientId: "STQ",
             type: IOrderType.LIMIT,
-            qty: 1,
+            qty: 100000,
             filledQty: 0,
             // price: 301,
-            price: 199,
+            price: 2.66,
             date: new Date(),
         } as any;
         const submitedOrder = await ob.submit(order);
