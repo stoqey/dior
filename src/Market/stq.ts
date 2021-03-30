@@ -1,5 +1,5 @@
 import {MarketDataType} from '@stoqey/client-graphql';
-import {refreshCurrency} from '../sofa/Currency';
+import {refreshCurrency, updateCurrency} from '../sofa/Currency';
 
 // eslint-disable-next-line prettier/prettier
 const mk = {
@@ -164,7 +164,7 @@ export const insertIntoInflux = (): MarketDataType[] => {
 
     const getToday: any[] = finalMarket.filter((i) => i.close === 2.96);
 
-    refreshCurrency(getToday[0]);
+    updateCurrency(getToday[0]);
 
     console.log('All market is', JSON.stringify(finalMarket.map((i) => i.changePct)));
     console.log('All market is', JSON.stringify(finalMarket.map((i) => i.change)));
