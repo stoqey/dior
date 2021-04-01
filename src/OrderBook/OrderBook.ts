@@ -7,7 +7,13 @@ import {Order, OrderParams, OrderTracker} from '../Order';
 import {TradeBook} from '../TradeBook';
 import {Trade} from '../Trade';
 import {getAllOrders, OrderModal, OrderRecordModal} from '../Order/Order.modal';
-import {Currency, CurrencyModel, CurrencySingleton, refreshCurrency} from '../sofa/Currency';
+import {
+    Currency,
+    CurrencyModel,
+    CurrencySingleton,
+    instrument,
+    refreshCurrency,
+} from '../sofa/Currency';
 import {sortBuyOrders, sortSellOrders} from '../utils/orders';
 import {isAsk, isBid, isCancelled, isFilled, saveOrder} from '../Order/order.utils';
 import {APPEVENTS, AppEvents} from '../events';
@@ -16,6 +22,8 @@ import {generateUUID, getChange, JSONDATA} from '../utils';
 import {matchOrder} from '../utils/matching';
 import {concat} from 'lodash';
 import {Action, OrderType} from '../shared';
+import {insert as insertInfoInflux} from '../Market';
+import {MarketDataType} from '@stoqey/client-graphql';
 
 const minQty = 1;
 
@@ -135,6 +143,7 @@ export class OrderBook {
     public async saveMarketPrice(price?: number): Promise<any> {
         const current: Currency = await CurrencyModel.findById(this.instrument);
 
+        // TODO record volume
         const {
             date: prevDate,
             close: prevClose,
@@ -147,6 +156,7 @@ export class OrderBook {
 
         // Change price
         if (price) {
+            // TODO record volume
             const close = price;
             const changePct = getChange(prevClose, close);
             const change = (changePct / 100) * close;
@@ -165,10 +175,26 @@ export class OrderBook {
                 date: new Date(),
             };
 
+            // market data to save
+            const marketdataToSave: MarketDataType = {
+                id: instrument,
+                symbol: instrument,
+                name: 'Stoqey',
+                changePct,
+                change,
+                high,
+                low,
+                close,
+                open: close,
+                volume,
+                date: new Date(),
+            };
+
             // Price updates
             // save it to db
             this.marketPrice = price;
-            return await CurrencyModel.save(newCurrency);
+            await CurrencyModel.save(newCurrency);
+            return await insertInfoInflux(marketdataToSave);
         }
 
         // Default
