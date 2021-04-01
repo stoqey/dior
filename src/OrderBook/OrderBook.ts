@@ -158,8 +158,11 @@ export class OrderBook {
         if (price) {
             // TODO record volume
             const close = price;
-            const changePct = getChange(prevClose, close);
-            const change = (changePct / 100) * close;
+            const changePercentage = getChange(prevClose, close);
+            const isZeroChange = changePercentage === 0;
+
+            const changePct = isZeroChange ? prevChangePct : getChange(prevClose, close);
+            const change = isZeroChange ? prevChange : (changePct / 100) * close;
             const high = close > prevHigh ? close : prevHigh;
             const low = close < prevLow ? close : prevHigh;
 
@@ -201,8 +204,6 @@ export class OrderBook {
         // Set it to this local
         this.marketPrice = prevClose;
         this.currency = current;
-
-        // TODO insert marketdata into influx
     }
 
     /**
