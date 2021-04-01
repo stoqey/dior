@@ -69,18 +69,16 @@ export const query = async function (args: QueryData): Promise<any> {
 
     log('dates are', {startingDate, endingDate});
 
-    const whereDates = fromNow
-        ? `WHERE time <= ${endingDate}` // with start date
-        : `WHERE time >= ${startingDate} AND time < ${endingDate}`; // without start date
+    // const whereDates = fromNow
+    //     ? `WHERE time <= ${endingDate}` // with start date
+    //     : `WHERE time >= ${startingDate} AND time < ${endingDate}`; // without start date
 
     const query = `
-  SELECT time AS date, mean("close") AS "close", mean("high") AS "high", mean("low") AS "low", mean("volume") AS "volume", mean("open") AS "open", mean("change") AS "change", mean("changePct") AS "changePct"  
-  FROM "${databaseName}"."autogen"."market" 
-  ${whereDates}
-  AND "symbol"='${symbol}' 
-  ${range ? `GROUP BY time(${range})` : 'GROUP BY TIME(1m)'} 
-  ${fill ? `fill(${fill})` : `fill(none)`} 
-  LIMIT ${limit}
+        SELECT time AS date, "close", "high", "low", "volume", "open", "change", "changePct"  
+        FROM "${databaseName}"."autogen"."market" 
+        WHERE time >= ${startingDate} AND time < ${endingDate}
+        AND "symbol"='${symbol}' 
+        LIMIT ${limit}
   `;
 
     let data = [];

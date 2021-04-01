@@ -27,7 +27,7 @@ describe('OrderBook', () => {
             qty: 10,
             filledQty: 0,
             // price: 301,
-            price: 4.4,
+            price: 6,
             date: new Date(),
         } as any;
         const submitedOrder = await ob.submit(order);
