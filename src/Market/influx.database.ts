@@ -43,8 +43,8 @@ export const startInflux = async (): Promise<boolean> => {
 
         log(`✅✅✅✅✅✅✅✅✅Started Influx ${databaseName}`);
 
-        // const marketData = insertIntoInflux();
-        // await insert(marketData);
+        const marketData = insertIntoInflux();
+        await insert(marketData);
 
         return true;
     } catch (error) {

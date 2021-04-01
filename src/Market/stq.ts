@@ -93,6 +93,7 @@ const mk = {
         2.66,
         2.96,
         3.03,
+        3.38,
     ],
 };
 
@@ -162,7 +163,7 @@ export const insertIntoInflux = (): MarketDataType[] => {
         market = newMarket;
     });
 
-    const getToday: any[] = finalMarket.filter((i) => i.close === 2.96);
+    const getToday: any[] = finalMarket.filter((i) => i.close === 3.03);
 
     updateCurrency(getToday[0]);
 
