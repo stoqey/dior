@@ -157,7 +157,6 @@ export class OrderBook {
 
         // Change price
         if (price) {
-            // TODO record volume
             const close = price;
             const changePercentage = getChange(prevClose, close);
             const isZeroChange = changePercentage === 0;
