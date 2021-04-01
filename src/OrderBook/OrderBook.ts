@@ -12,7 +12,7 @@ import {sortBuyOrders, sortSellOrders} from '../utils/orders';
 import {isAsk, isBid, isCancelled, isFilled, saveOrder} from '../Order/order.utils';
 import {APPEVENTS, AppEvents} from '../events';
 import {log, verbose} from '../log';
-import {generateUUID, JSONDATA} from '../utils';
+import {generateUUID, getChange, JSONDATA} from '../utils';
 import {matchOrder} from '../utils/matching';
 import {concat} from 'lodash';
 import {Action, OrderType} from '../shared';
@@ -133,21 +133,50 @@ export class OrderBook {
      * @param price number
      */
     public async saveMarketPrice(price?: number): Promise<any> {
-        const thisCurrency: Currency = await CurrencyModel.findById(this.instrument);
+        const current: Currency = await CurrencyModel.findById(this.instrument);
+
+        const {
+            date: prevDate,
+            close: prevClose,
+            high: prevHigh,
+            low: prevLow,
+            volume,
+            changePct: prevChangePct,
+            change: prevChange,
+        } = current;
 
         // Change price
         if (price) {
-            // TODO calculate change
-            // TODO Record high and low
+            const close = price;
+            const changePct = getChange(prevClose, close);
+            const change = (changePct / 100) * close;
+            const high = close > prevHigh ? close : prevHigh;
+            const low = close < prevLow ? close : prevHigh;
+
+            const newCurrency = {
+                ...current,
+                changePct,
+                change,
+                high,
+                low,
+                close,
+                open: close,
+                volume,
+                date: new Date(),
+            };
+
+            // Price updates
             // save it to db
             this.marketPrice = price;
-            thisCurrency.close = price;
-            return await CurrencyModel.save(thisCurrency);
+            return await CurrencyModel.save(newCurrency);
         }
 
+        // Default
         // Set it to this local
-        this.marketPrice = thisCurrency.close;
-        this.currency = thisCurrency;
+        this.marketPrice = prevClose;
+        this.currency = current;
+
+        // TODO insert marketdata into influx
     }
 
     /**
