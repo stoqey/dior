@@ -28,6 +28,7 @@ interface QueryData {
     range: GroupBy;
     fill?: 'none' | null | 0;
     limit?: number;
+    fromNow?: boolean;
 }
 
 export const query = async function (args: QueryData): Promise<any> {
@@ -38,6 +39,7 @@ export const query = async function (args: QueryData): Promise<any> {
         range,
         fill,
         limit = 1000,
+        fromNow = true,
     } = args;
 
     log('query', args);
@@ -67,10 +69,14 @@ export const query = async function (args: QueryData): Promise<any> {
 
     log('dates are', {startingDate, endingDate});
 
+    const whereDates = fromNow
+        ? `WHERE time <= ${endingDate}` // with start date
+        : `WHERE time >= ${startingDate} AND time < ${endingDate}`; // without start date
+
     const query = `
   SELECT time AS date, mean("close") AS "close", mean("high") AS "high", mean("low") AS "low", mean("volume") AS "volume", mean("open") AS "open", mean("change") AS "change", mean("changePct") AS "changePct"  
   FROM "${databaseName}"."autogen"."market" 
-  WHERE time > ${startingDate} AND time < ${endingDate} AND close != 0
+  ${whereDates}
   AND "symbol"='${symbol}' 
   ${range ? `GROUP BY time(${range})` : 'GROUP BY TIME(1m)'} 
   ${fill ? `fill(${fill})` : `fill(none)`} 

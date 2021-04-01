@@ -193,6 +193,12 @@ export class OrderBook {
                 date: new Date(),
             };
 
+            log(
+                `********************************MARKET**************** ${JSON.stringify(
+                    marketdataToSave
+                )}`
+            );
+
             // Price updates
             // save it to db
             this.marketPrice = price;

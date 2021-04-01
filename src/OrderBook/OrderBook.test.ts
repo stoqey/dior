@@ -24,10 +24,10 @@ describe('OrderBook', () => {
             instrument: "STQ",
             clientId: "STQ",
             type: IOrderType.LIMIT,
-            qty: 100000,
+            qty: 10,
             filledQty: 0,
             // price: 301,
-            price: 3.03,
+            price: 4.4,
             date: new Date(),
         } as any;
         const submitedOrder = await ob.submit(order);
