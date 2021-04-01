@@ -1,5 +1,6 @@
 import {MarketDataType} from '@stoqey/client-graphql';
-
+import {refreshCurrency, updateCurrency} from '../sofa/Currency';
+import {getChange} from '../utils';
 // eslint-disable-next-line prettier/prettier
 const mk = {
     $schema: [
@@ -84,20 +85,16 @@ const mk = {
         2.7,
         2.9,
         3,
-        2.6,
+        2.6, // 24th
+        2.62,
+        2.64,
+        2.65,
+        2.67,
+        2.66,
+        2.96,
+        3.03, // 31
+        3.38, // 1 April
     ],
-};
-
-// https://www.investopedia.com/ask/answers/how-do-you-calculate-percentage-gain-or-loss-investment/
-
-/**
- * Get Profit percentage gained
- * @param startPrice
- * @param endPrice
- */
-export const getChange = (startPrice: number, endPrice: number): number => {
-    const results = ((endPrice - startPrice) / startPrice) * 100;
-    return Number.isNaN(results) ? 0 : results;
 };
 
 export const insertIntoInflux = (): MarketDataType[] => {
@@ -154,7 +151,12 @@ export const insertIntoInflux = (): MarketDataType[] => {
         market = newMarket;
     });
 
+    const getToday: any[] = finalMarket.filter((i) => i.close === 3.03);
+
+    updateCurrency(getToday[0]);
+
     console.log('All market is', JSON.stringify(finalMarket.map((i) => i.changePct)));
     console.log('All market is', JSON.stringify(finalMarket.map((i) => i.change)));
+    console.log('Last price', JSON.stringify(getToday));
     return finalMarket;
 };

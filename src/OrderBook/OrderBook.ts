@@ -7,15 +7,23 @@ import {Order, OrderParams, OrderTracker} from '../Order';
 import {TradeBook} from '../TradeBook';
 import {Trade} from '../Trade';
 import {getAllOrders, OrderModal, OrderRecordModal} from '../Order/Order.modal';
-import {Currency, CurrencyModel, CurrencySingleton, refreshCurrency} from '../sofa/Currency';
+import {
+    Currency,
+    CurrencyModel,
+    CurrencySingleton,
+    instrument,
+    refreshCurrency,
+} from '../sofa/Currency';
 import {sortBuyOrders, sortSellOrders} from '../utils/orders';
 import {isAsk, isBid, isCancelled, isFilled, saveOrder} from '../Order/order.utils';
 import {APPEVENTS, AppEvents} from '../events';
 import {log, verbose} from '../log';
-import {generateUUID, JSONDATA} from '../utils';
+import {generateUUID, getChange, JSONDATA} from '../utils';
 import {matchOrder} from '../utils/matching';
 import {concat} from 'lodash';
 import {Action, OrderType} from '../shared';
+import {insert as insertInfoInflux} from '../Market';
+import {MarketDataType} from '@stoqey/client-graphql';
 
 const minQty = 1;
 
@@ -131,23 +139,77 @@ export class OrderBook {
     /**
      * setMarketPrice
      * @param price number
+     * @param volumeTraded number
      */
-    public async saveMarketPrice(price?: number): Promise<any> {
-        const thisCurrency: Currency = await CurrencyModel.findById(this.instrument);
+    public async saveMarketPrice(price?: number, volumeTraded?: number): Promise<any> {
+        const current: Currency = await CurrencyModel.findById(this.instrument);
+
+        // TODO record volume
+        const {
+            date: prevDate,
+            close: prevClose,
+            high: prevHigh,
+            low: prevLow,
+            volume: prevVolume,
+            changePct: prevChangePct,
+            change: prevChange,
+        } = current;
 
         // Change price
         if (price) {
-            // TODO calculate change
-            // TODO Record high and low
+            const close = price;
+            const changePercentage = getChange(prevClose, close);
+            const isZeroChange = changePercentage === 0;
+            const volume = prevVolume + (+volumeTraded || 0);
+            const changePct = isZeroChange ? prevChangePct : getChange(prevClose, close);
+            const change = isZeroChange ? prevChange : (changePct / 100) * close;
+            const high = close > prevHigh ? close : prevHigh;
+            const low = close < prevLow ? close : prevHigh;
+
+            const newCurrency = {
+                ...current,
+                changePct,
+                change,
+                high,
+                low,
+                close,
+                open: close,
+                volume,
+                date: new Date(),
+            };
+
+            // market data to save
+            const marketdataToSave: MarketDataType = {
+                id: instrument,
+                symbol: instrument,
+                name: 'Stoqey',
+                changePct,
+                change,
+                high,
+                low,
+                close,
+                open: close,
+                volume,
+                date: new Date(),
+            };
+
+            log(
+                `********************************MARKET**************** ${JSON.stringify(
+                    marketdataToSave
+                )}`
+            );
+
+            // Price updates
             // save it to db
             this.marketPrice = price;
-            thisCurrency.close = price;
-            return await CurrencyModel.save(thisCurrency);
+            await CurrencyModel.save(newCurrency);
+            return await insertInfoInflux(marketdataToSave);
         }
 
+        // Default
         // Set it to this local
-        this.marketPrice = thisCurrency.close;
-        this.currency = thisCurrency;
+        this.marketPrice = prevClose;
+        this.currency = current;
     }
 
     /**
@@ -569,7 +631,7 @@ export class OrderBook {
             // Set marketPrice from here
             const lastMatchedOrder = totalOffers[totalOffers.length - 1];
             const lastMatchedOrderPrice = lastMatchedOrder[2];
-            await this.saveMarketPrice(lastMatchedOrderPrice);
+            await this.saveMarketPrice(lastMatchedOrderPrice, totalSettledQty);
             log(`✅✅✅: Set market price ${lastMatchedOrderPrice}`);
         }
 
