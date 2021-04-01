@@ -139,8 +139,9 @@ export class OrderBook {
     /**
      * setMarketPrice
      * @param price number
+     * @param volumeTraded number
      */
-    public async saveMarketPrice(price?: number): Promise<any> {
+    public async saveMarketPrice(price?: number, volumeTraded?: number): Promise<any> {
         const current: Currency = await CurrencyModel.findById(this.instrument);
 
         // TODO record volume
@@ -149,7 +150,7 @@ export class OrderBook {
             close: prevClose,
             high: prevHigh,
             low: prevLow,
-            volume,
+            volume: prevVolume,
             changePct: prevChangePct,
             change: prevChange,
         } = current;
@@ -160,7 +161,7 @@ export class OrderBook {
             const close = price;
             const changePercentage = getChange(prevClose, close);
             const isZeroChange = changePercentage === 0;
-
+            const volume = prevVolume + (+volumeTraded || 0);
             const changePct = isZeroChange ? prevChangePct : getChange(prevClose, close);
             const change = isZeroChange ? prevChange : (changePct / 100) * close;
             const high = close > prevHigh ? close : prevHigh;
@@ -625,7 +626,7 @@ export class OrderBook {
             // Set marketPrice from here
             const lastMatchedOrder = totalOffers[totalOffers.length - 1];
             const lastMatchedOrderPrice = lastMatchedOrder[2];
-            await this.saveMarketPrice(lastMatchedOrderPrice);
+            await this.saveMarketPrice(lastMatchedOrderPrice, totalSettledQty);
             log(`✅✅✅: Set market price ${lastMatchedOrderPrice}`);
         }
 
